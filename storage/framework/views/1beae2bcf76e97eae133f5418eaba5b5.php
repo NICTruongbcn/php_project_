@@ -1,8 +1,6 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'MemoryMaster - Master Your Memory'); ?>
 
-@section('title', 'MemoryMaster - Master Your Memory')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
     <section class="hero-gradient text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
             <div class="text-center">
@@ -17,15 +15,15 @@
                 </p>
 
                 <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-12">
-                    @auth
-                        <a href="{{ route('dashboard') }}" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
+                    <?php if(auth()->guard()->check()): ?>
+                        <a href="<?php echo e(route('dashboard')); ?>" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
                             Go to Dashboard <i class="fas fa-arrow-right ml-2"></i>
                         </a>
-                    @else
-                        <a href="{{ route('register') }}" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
+                    <?php else: ?>
+                        <a href="<?php echo e(route('register')); ?>" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
                             Start Learning Now <i class="fas fa-arrow-right ml-2"></i>
                         </a>
-                    @endauth
+                    <?php endif; ?>
                     <a href="#methods" class="border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-blue-600 font-bold text-lg transition-all duration-300">
                         Learn More
                     </a>
@@ -234,26 +232,27 @@
                 Join thousands of learners who have mastered the art of memory with our proven techniques.
             </p>
             <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                @auth
-                    <a href="{{ route('dashboard') }}" class="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-blue-50 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
+                <?php if(auth()->guard()->check()): ?>
+                    <a href="<?php echo e(route('dashboard')); ?>" class="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-blue-50 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
                         Continue Learning
                     </a>
-                @else
-                    <a href="{{ route('register') }}" class="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-blue-50 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
+                <?php else: ?>
+                    <a href="<?php echo e(route('register')); ?>" class="bg-white text-blue-600 px-8 py-4 rounded-lg hover:bg-blue-50 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
                         Start Your Journey Free
                     </a>
-                @endauth
+                <?php endif; ?>
                 <a href="#methods" class="border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-blue-600 font-bold text-lg transition-all duration-300">
                     Explore Methods
                 </a>
             </div>
         </div>
     </section>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@section('scripts')
+<?php $__env->startSection('scripts'); ?>
     <script>
         // Smooth scroll script đã có trong layout
         console.log('Welcome page loaded');
     </script>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\study\NIC\DGL-123(intoduction PHP)\php_project\php_project_\resources\views/welcome.blade.php ENDPATH**/ ?>

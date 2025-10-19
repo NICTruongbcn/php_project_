@@ -1,18 +1,18 @@
-@extends('layouts.app')
 
-@section('title', 'Dashboard - MemoryMaster')
 
-@section('content')
+<?php $__env->startSection('title', 'Dashboard - MemoryMaster'); ?>
+
+<?php $__env->startSection('content'); ?>
     <div class="max-w-7xl mx-auto px-4 py-8">
         <section class="text-center mb-12">
             <h2 class="text-4xl font-bold text-gray-800 mb-4">
-                Welcome back, {{ Auth::user()->name }}!
+                Welcome back, <?php echo e(Auth::user()->name); ?>!
             </h2>
             <p class="text-xl text-gray-600 mb-8">
                 Continue your memory mastery journey with our legendary techniques.
             </p>
             <div class="flex justify-center space-x-4">
-                <a href="{{ route('home') }}" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                <a href="<?php echo e(route('home')); ?>" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
                     ← Back to Home
                 </a>
                 <button class="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50">
@@ -102,4 +102,5 @@
             </div>
         </section>
     </div>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\study\NIC\DGL-123(intoduction PHP)\php_project\php_project_\resources\views/auth/dashboard.blade.php ENDPATH**/ ?>
