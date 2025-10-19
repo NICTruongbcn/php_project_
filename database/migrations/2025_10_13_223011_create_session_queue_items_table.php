@@ -11,7 +11,7 @@ return new class extends Migration {
             $table->foreignId('session_id')->constrained('study_sessions')->onDelete('cascade');
             $table->foreignId('page_id')->constrained('pages')->onDelete('cascade');
             $table->integer('queue_position')->default(0);
-            $table->string('status')->default('pending'); // pending, learning, done
+            $table->string('status')->default('pending'); 
             $table->timestamp('next_review_at')->nullable();
             $table->float('ease_factor')->default(2.5);
             $table->integer('interval_days')->default(0);

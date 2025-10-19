@@ -11,9 +11,9 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('plan_id')->constrained('vip_plans')->onDelete('cascade');
             $table->decimal('amount', 10, 2);
-            $table->string('provider'); // momo, paypal, stripe...
+            $table->string('provider');
             $table->string('provider_reference')->nullable();
-            $table->string('status')->default('pending'); // pending/success/failed
+            $table->string('status')->default('pending');
             $table->timestamps();
         });
     }
