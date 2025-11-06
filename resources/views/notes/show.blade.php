@@ -44,6 +44,10 @@
                             {{ ucfirst($note->subject) }}
                         </span>
                     @endif
+                    <span class="flex items-center">
+                        <i class="fas fa-{{ $note->type === 'vocab' ? 'book' : ($note->type === 'formula' ? 'square-root-alt' : 'sticky-note') }} mr-1"></i>
+                        {{ ucfirst($note->type) }} Note
+                    </span>
                 </div>
             </div>
             
@@ -54,10 +58,12 @@
                         + Add Page
                     </a>
                 @endif
-                <a href="{{ route('study.show', $note->id) }}" 
-                   class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold">
-                    Start Studying
-                </a>
+                @if($pages->count() > 0)
+                    <a href="{{ route('study.show', $note->id) }}" 
+                       class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                        Start Studying
+                    </a>
+                @endif
             </div>
         </div>
 
@@ -115,19 +121,55 @@
                                             {{ ucfirst($difficulty) }}
                                         </span>
                                     @endif
+
+                                    <!-- Hiển thị word type cho vocab notes -->
+                                    @if($note->type === 'vocab' && $page->meta && isset(json_decode($page->meta, true)['word_type']))
+                                        @php
+                                            $wordType = json_decode($page->meta, true)['word_type'];
+                                            $wordTypeColors = [
+                                                'noun' => 'bg-blue-100 text-blue-800',
+                                                'verb' => 'bg-green-100 text-green-800', 
+                                                'adjective' => 'bg-yellow-100 text-yellow-800',
+                                                'adverb' => 'bg-purple-100 text-purple-800',
+                                                'phrase' => 'bg-indigo-100 text-indigo-800',
+                                                'idiom' => 'bg-pink-100 text-pink-800',
+                                                'general' => 'bg-gray-100 text-gray-800'
+                                            ];
+                                        @endphp
+                                        <span class="text-xs font-semibold px-2 py-1 rounded {{ $wordTypeColors[$wordType] ?? 'bg-gray-100 text-gray-800' }}">
+                                            {{ ucfirst($wordType) }}
+                                        </span>
+                                    @endif
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <!-- Front Content -->
                                     <div>
-                                        <h4 class="font-semibold text-gray-700 mb-2 text-sm">Front</h4>
+                                        <h4 class="font-semibold text-gray-700 mb-2 text-sm">
+                                            @if($note->type === 'vocab') Term
+                                            @elseif($note->type === 'formula') Formula
+                                            @else Front @endif
+                                        </h4>
                                         <div class="text-gray-800">
                                             @if($page->front_text)
-                                                <p>{{ $page->front_text }}</p>
+                                                @if($note->type === 'vocab')
+                                                    <div class="font-semibold text-lg text-gray-900 mb-2">{{ $page->front_text }}</div>
+                                                @else
+                                                    <p class="mb-2">{{ $page->front_text }}</p>
+                                                @endif
                                             @endif
                                             @if($page->front_latex)
-                                                <div class="mt-2 bg-gray-100 p-3 rounded font-mono text-sm">
+                                                <div class="bg-gray-100 p-3 rounded font-mono text-sm mb-2">
+                                                    <div class="font-semibold text-xs text-gray-500 mb-1">LaTeX:</div>
                                                     {{ $page->front_latex }}
+                                                </div>
+                                            @endif
+                                            @if($page->front_image)
+                                                <div class="mt-2">
+                                                    <div class="font-semibold text-xs text-gray-500 mb-1">Image:</div>
+                                                    <img src="{{ Storage::url($page->front_image) }}" 
+                                                         alt="Front image" 
+                                                         class="max-w-full h-auto rounded-lg border border-gray-300 max-h-48 object-contain">
                                                 </div>
                                             @endif
                                         </div>
@@ -135,19 +177,45 @@
 
                                     <!-- Back Content -->
                                     <div>
-                                        <h4 class="font-semibold text-gray-700 mb-2 text-sm">Back</h4>
+                                        <h4 class="font-semibold text-gray-700 mb-2 text-sm">
+                                            @if($note->type === 'vocab') Definition
+                                            @elseif($note->type === 'formula') Explanation
+                                            @else Back @endif
+                                        </h4>
                                         <div class="text-gray-800">
                                             @if($page->back_text)
-                                                <p>{{ $page->back_text }}</p>
+                                                <p class="mb-2">{{ $page->back_text }}</p>
                                             @endif
                                             @if($page->back_latex)
-                                                <div class="mt-2 bg-gray-100 p-3 rounded font-mono text-sm">
+                                                <div class="bg-gray-100 p-3 rounded font-mono text-sm mb-2">
+                                                    <div class="font-semibold text-xs text-gray-500 mb-1">LaTeX:</div>
                                                     {{ $page->back_latex }}
+                                                </div>
+                                            @endif
+                                            @if($page->back_image)
+                                                <div class="mt-2">
+                                                    <div class="font-semibold text-xs text-gray-500 mb-1">Image:</div>
+                                                    <img src="{{ Storage::url($page->back_image) }}" 
+                                                         alt="Back image" 
+                                                         class="max-w-full h-auto rounded-lg border border-gray-300 max-h-48 object-contain">
                                                 </div>
                                             @endif
                                         </div>
                                     </div>
                                 </div>
+
+                                <!-- Hiển thị example sentence cho vocab notes -->
+                                @if($note->type === 'vocab' && $page->meta && isset(json_decode($page->meta, true)['example_sentence']))
+                                    @php
+                                        $exampleSentence = json_decode($page->meta, true)['example_sentence'];
+                                    @endphp
+                                    @if($exampleSentence)
+                                        <div class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                            <div class="font-semibold text-sm text-blue-800 mb-1">Example Sentence:</div>
+                                            <p class="text-blue-900 italic">"{{ $exampleSentence }}"</p>
+                                        </div>
+                                    @endif
+                                @endif
 
                                 @if($page->meta && isset(json_decode($page->meta, true)['tags']))
                                     @php
@@ -198,6 +266,47 @@
         @endif
     </div>
 
+    <!-- Quick Stats -->
+    @if($pages->count() > 0)
+    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-layer-group text-blue-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Total Pages</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ $pages->count() }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-check-circle text-green-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Completion</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ min(round(($pages->count() / $note->page_limit) * 100), 100) }}%</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-clock text-purple-600"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600">Created</p>
+                    <p class="text-2xl font-bold text-gray-800">{{ $note->created_at->format('M d') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Action Buttons -->
     <div class="flex justify-between items-center mt-6">
         <a href="{{ route('dashboard') }}" 
@@ -219,4 +328,10 @@
         </div>
     </div>
 </div>
+
+<style>
+.object-contain {
+    object-fit: contain;
+}
+</style>
 @endsection

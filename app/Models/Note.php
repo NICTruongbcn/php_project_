@@ -12,18 +12,25 @@ class Note extends Model
     protected $fillable = [
         'user_id',
         'title',
+        'type',
+        'subject', 
         'description',
-        'type', // normal | vocab | formula
-        'subject',
         'is_private',
         'is_completed',
-        'page_limit',
+        'page_limit'
     ];
 
     protected $casts = [
         'is_private' => 'boolean',
         'is_completed' => 'boolean',
-        'page_limit' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    // Giá trị mặc định
+    protected $attributes = [
+        'is_private' => true,
+        'is_completed' => false,
     ];
 
     public function user()
@@ -33,7 +40,7 @@ class Note extends Model
 
     public function pages()
     {
-        return $this->hasMany(Page::class);
+        return $this->hasMany(Page::class)->orderBy('position');
     }
 
     public function studySessions()

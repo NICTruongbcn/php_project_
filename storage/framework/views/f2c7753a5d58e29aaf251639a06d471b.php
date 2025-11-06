@@ -10,13 +10,24 @@
             <p class="text-gray-600">Choose the type of note you want to create and start your learning journey.</p>
         </div>
 
+        <?php if($errors->any()): ?>
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                <ul class="list-disc list-inside">
+                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li><?php echo e($error); ?></li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
         <form method="POST" action="<?php echo e(route('notes.store')); ?>" class="space-y-6">
             <?php echo csrf_field(); ?>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <label class="relative">
-                    <input type="radio" name="type" value="normal" class="hidden peer" checked>
-                    <div class="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all duration-300 hover:border-blue-500 peer-checked:border-blue-500 peer-checked:bg-blue-50">
+                <!-- Normal Note -->
+                <label class="relative cursor-pointer">
+                    <input type="radio" name="type" value="normal" class="hidden peer" <?php echo e(old('type', 'normal') === 'normal' ? 'checked' : ''); ?>>
+                    <div class="border-2 border-gray-200 rounded-lg p-6 transition-all duration-300 hover:border-blue-500 peer-checked:border-blue-500 peer-checked:bg-blue-50 h-full">
                         <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                             <i class="fas fa-sticky-note text-blue-600 text-xl"></i>
                         </div>
@@ -29,9 +40,10 @@
                     </div>
                 </label>
 
-                <label class="relative">
-                    <input type="radio" name="type" value="vocab" class="hidden peer">
-                    <div class="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all duration-300 hover:border-green-500 peer-checked:border-green-500 peer-checked:bg-green-50">
+                <!-- Vocabulary Note -->
+                <label class="relative cursor-pointer">
+                    <input type="radio" name="type" value="vocab" class="hidden peer" <?php echo e(old('type') === 'vocab' ? 'checked' : ''); ?>>
+                    <div class="border-2 border-gray-200 rounded-lg p-6 transition-all duration-300 hover:border-green-500 peer-checked:border-green-500 peer-checked:bg-green-50 h-full">
                         <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
                             <i class="fas fa-book text-green-600 text-xl"></i>
                         </div>
@@ -44,9 +56,10 @@
                     </div>
                 </label>
 
-                <label class="relative">
-                    <input type="radio" name="type" value="formula" class="hidden peer">
-                    <div class="border-2 border-gray-200 rounded-lg p-6 cursor-pointer transition-all duration-300 hover:border-purple-500 peer-checked:border-purple-500 peer-checked:bg-purple-50">
+                <!-- Formula Note -->
+                <label class="relative cursor-pointer">
+                    <input type="radio" name="type" value="formula" class="hidden peer" <?php echo e(old('type') === 'formula' ? 'checked' : ''); ?>>
+                    <div class="border-2 border-gray-200 rounded-lg p-6 transition-all duration-300 hover:border-purple-500 peer-checked:border-purple-500 peer-checked:bg-purple-50 h-full">
                         <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
                             <i class="fas fa-square-root-alt text-purple-600 text-xl"></i>
                         </div>
@@ -61,6 +74,7 @@
             </div>
 
             <div class="space-y-6">
+                <!-- Title -->
                 <div>
                     <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
                         Note Title *
@@ -81,6 +95,7 @@ endif;
 unset($__errorArgs, $__bag); ?>
                 </div>
 
+                <!-- Subject Field (only for formula notes) -->
                 <div id="subject-field" class="hidden">
                     <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
                         Subject *
@@ -88,12 +103,12 @@ unset($__errorArgs, $__bag); ?>
                     <select name="subject" id="subject"
                             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors">
                         <option value="">Select a subject</option>
-                        <option value="math">Mathematics</option>
-                        <option value="physics">Physics</option>
-                        <option value="chemistry">Chemistry</option>
-                        <option value="biology">Biology</option>
-                        <option value="english">English</option>
-                        <option value="other">Other</option>
+                        <option value="math" <?php echo e(old('subject') === 'math' ? 'selected' : ''); ?>>Mathematics</option>
+                        <option value="physics" <?php echo e(old('subject') === 'physics' ? 'selected' : ''); ?>>Physics</option>
+                        <option value="chemistry" <?php echo e(old('subject') === 'chemistry' ? 'selected' : ''); ?>>Chemistry</option>
+                        <option value="biology" <?php echo e(old('subject') === 'biology' ? 'selected' : ''); ?>>Biology</option>
+                        <option value="english" <?php echo e(old('subject') === 'english' ? 'selected' : ''); ?>>English</option>
+                        <option value="other" <?php echo e(old('subject') === 'other' ? 'selected' : ''); ?>>Other</option>
                     </select>
                     <?php $__errorArgs = ['subject'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
@@ -107,6 +122,7 @@ endif;
 unset($__errorArgs, $__bag); ?>
                 </div>
 
+                <!-- Description -->
                 <div>
                     <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
                         Description (Optional)
@@ -148,6 +164,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function toggleSubjectField() {
         const selectedType = document.querySelector('input[name="type"]:checked').value;
+        console.log('Selected type:', selectedType);
+        
         if (selectedType === 'formula') {
             subjectField.classList.remove('hidden');
             document.getElementById('subject').required = true;
@@ -161,6 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
         input.addEventListener('change', toggleSubjectField);
     });
 
+    // Initialize on page load
     toggleSubjectField();
 });
 </script>

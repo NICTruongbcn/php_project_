@@ -10,6 +10,18 @@
                 <div>
                     <h1 class="text-3xl font-bold text-gray-800 mb-2">Add New Page</h1>
                     <p class="text-gray-600">Add content to your note: "<?php echo e($note->title); ?>"</p>
+                    <div class="mt-2">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                            <?php if($note->type === 'normal'): ?> bg-blue-100 text-blue-800
+                            <?php elseif($note->type === 'vocab'): ?> bg-green-100 text-green-800
+                            <?php else: ?> bg-purple-100 text-purple-800 <?php endif; ?>">
+                            <i class="fas 
+                                <?php if($note->type === 'normal'): ?> fa-sticky-note
+                                <?php elseif($note->type === 'vocab'): ?> fa-book
+                                <?php else: ?> fa-square-root-alt <?php endif; ?> mr-2"></i>
+                            <?php echo e(ucfirst($note->type)); ?> Note
+                        </span>
+                    </div>
                 </div>
                 <div class="text-right">
                     <div class="text-sm text-gray-500 mb-1">Progress</div>
@@ -42,25 +54,43 @@
             <?php endif; ?>
         </div>
 
-        <form method="POST" action="<?php echo e(route('pages.store', $note->id)); ?>" class="space-y-6">
+        <form method="POST" action="<?php echo e(route('pages.store', $note->id)); ?>" enctype="multipart/form-data" class="space-y-6">
             <?php echo csrf_field(); ?>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Front Side -->
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-gray-800">Front Side</h3>
-                        <span class="text-sm text-gray-500">Question / Term</span>
+                        <span class="text-sm text-gray-500">
+                            <?php if($note->type === 'vocab'): ?> Term 
+                            <?php elseif($note->type === 'formula'): ?> Formula 
+                            <?php else: ?> Question/Content <?php endif; ?>
+                        </span>
                     </div>
                     
+                    <!-- Text Content -->
                     <div>
                         <label for="front_text" class="block text-sm font-medium text-gray-700 mb-2">
-                            Text Content
+                            <?php if($note->type === 'vocab'): ?> Term *
+                            <?php elseif($note->type === 'formula'): ?> Formula Description
+                            <?php else: ?> Content * <?php endif; ?>
                         </label>
+                        <?php if($note->type === 'vocab'): ?>
+                        <input type="text" name="front_text" id="front_text" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                               placeholder="Enter the term or word"
+                               value="<?php echo e(old('front_text')); ?>">
+                        <?php else: ?>
                         <textarea name="front_text" id="front_text" rows="4"
                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                  placeholder="Enter the question, term, or front content"><?php echo e(old('front_text')); ?></textarea>
+                                  placeholder="<?php if($note->type === 'formula'): ?> Describe the formula <?php else: ?> Enter the question or front content <?php endif; ?>"
+                                  <?php if($note->type !== 'formula'): ?> required <?php endif; ?>><?php echo e(old('front_text')); ?></textarea>
+                        <?php endif; ?>
                     </div>
 
+                    <!-- LaTeX Formula (Only for formula notes) -->
+                    <?php if($note->type === 'formula'): ?>
                     <div>
                         <label for="front_latex" class="block text-sm font-medium text-gray-700 mb-2">
                             LaTeX Formula (Optional)
@@ -70,23 +100,75 @@
                                   placeholder="Enter LaTeX formula (e.g., E = mc^2)"><?php echo e(old('front_latex')); ?></textarea>
                         <p class="text-xs text-gray-500 mt-1">For mathematical formulas and equations</p>
                     </div>
+                    <?php endif; ?>
+
+                    <!-- Word Type (Only for vocab notes) -->
+                    <?php if($note->type === 'vocab'): ?>
+                    <div>
+                        <label for="word_type" class="block text-sm font-medium text-gray-700 mb-2">
+                            Word Type (Optional)
+                        </label>
+                        <select name="word_type" id="word_type"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <option value="general">General</option>
+                            <option value="noun">Noun</option>
+                            <option value="verb">Verb</option>
+                            <option value="adjective">Adjective</option>
+                            <option value="adverb">Adverb</option>
+                            <option value="phrase">Phrase</option>
+                            <option value="idiom">Idiom</option>
+                        </select>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Image Upload -->
+                    <div>
+                        <label for="front_image" class="block text-sm font-medium text-gray-700 mb-2">
+                            <?php if($note->type === 'formula'): ?> Formula Image
+                            <?php else: ?> Front Image <?php endif; ?>
+                        </label>
+                        
+                        <!-- Custom File Input -->
+                        <div class="custom-file-input">
+                            <input type="file" name="front_image" id="front_image" 
+                                   accept="image/*"
+                                   class="file-input hidden">
+                            <label for="front_image" class="file-input-label">
+                                <i class="fas fa-upload mr-2"></i>
+                                <span class="file-input-text">Choose file</span>
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Upload an image (max: 2MB)</p>
+                        <div id="front-file-name" class="text-sm text-green-600 mt-1 hidden"></div>
+                    </div>
                 </div>
 
+                <!-- Back Side -->
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-gray-800">Back Side</h3>
-                        <span class="text-sm text-gray-500">Answer / Definition</span>
+                        <span class="text-sm text-gray-500">
+                            <?php if($note->type === 'vocab'): ?> Definition
+                            <?php elseif($note->type === 'formula'): ?> Explanation
+                            <?php else: ?> Answer/Content <?php endif; ?>
+                        </span>
                     </div>
                     
+                    <!-- Text Content -->
                     <div>
                         <label for="back_text" class="block text-sm font-medium text-gray-700 mb-2">
-                            Text Content
+                            <?php if($note->type === 'vocab'): ?> Definition *
+                            <?php elseif($note->type === 'formula'): ?> Formula Explanation
+                            <?php else: ?> Content * <?php endif; ?>
                         </label>
                         <textarea name="back_text" id="back_text" rows="4"
                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                  placeholder="Enter the answer, definition, or back content"><?php echo e(old('back_text')); ?></textarea>
+                                  placeholder="<?php if($note->type === 'vocab'): ?> Enter the definition <?php elseif($note->type === 'formula'): ?> Explain the formula <?php else: ?> Enter the answer or back content <?php endif; ?>"
+                                  <?php if($note->type !== 'formula'): ?> required <?php endif; ?>><?php echo e(old('back_text')); ?></textarea>
                     </div>
 
+                    <!-- LaTeX Formula (Only for formula notes) -->
+                    <?php if($note->type === 'formula'): ?>
                     <div>
                         <label for="back_latex" class="block text-sm font-medium text-gray-700 mb-2">
                             LaTeX Formula (Optional)
@@ -96,18 +178,53 @@
                                   placeholder="Enter LaTeX formula"><?php echo e(old('back_latex')); ?></textarea>
                         <p class="text-xs text-gray-500 mt-1">For mathematical formulas and equations</p>
                     </div>
+                    <?php endif; ?>
+
+                    <!-- Example Sentence (Only for vocab notes) -->
+                    <?php if($note->type === 'vocab'): ?>
+                    <div>
+                        <label for="example_sentence" class="block text-sm font-medium text-gray-700 mb-2">
+                            Example Sentence (Optional)
+                        </label>
+                        <textarea name="example_sentence" id="example_sentence" rows="2"
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                  placeholder="Enter an example sentence"><?php echo e(old('example_sentence')); ?></textarea>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Image Upload -->
+                    <div>
+                        <label for="back_image" class="block text-sm font-medium text-gray-700 mb-2">
+                            <?php if($note->type === 'formula'): ?> Explanation Image
+                            <?php else: ?> Back Image <?php endif; ?>
+                        </label>
+                        
+                        <!-- Custom File Input -->
+                        <div class="custom-file-input">
+                            <input type="file" name="back_image" id="back_image" 
+                                   accept="image/*"
+                                   class="file-input hidden">
+                            <label for="back_image" class="file-input-label">
+                                <i class="fas fa-upload mr-2"></i>
+                                <span class="file-input-text">Choose file</span>
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Upload an image (max: 2MB)</p>
+                        <div id="back-file-name" class="text-sm text-green-600 mt-1 hidden"></div>
+                    </div>
                 </div>
             </div>
 
+            <!-- Additional Options -->
             <div class="border-t border-gray-200 pt-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Additional Options</h3>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="difficulty" class="block text-sm font-medium text-gray-700 mb-2">
-                            Difficulty Level
+                            Difficulty Level *
                         </label>
-                        <select name="difficulty" id="difficulty"
+                        <select name="difficulty" id="difficulty" required
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             <option value="easy">Easy</option>
                             <option value="medium" selected>Medium</option>
@@ -123,7 +240,11 @@
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                placeholder="Enter tags separated by commas"
                                value="<?php echo e(old('tags')); ?>">
-                        <p class="text-xs text-gray-500 mt-1">e.g., vocabulary, math, important</p>
+                        <p class="text-xs text-gray-500 mt-1">
+                            <?php if($note->type === 'vocab'): ?> e.g., vocabulary, english, important
+                            <?php elseif($note->type === 'formula'): ?> e.g., math, physics, equation
+                            <?php else: ?> e.g., important, summary, key-points <?php endif; ?>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -150,6 +271,7 @@
         </form>
     </div>
 
+    <!-- Preview Section -->
     <div class="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 class="text-xl font-semibold text-gray-800 mb-4">Preview</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -158,6 +280,7 @@
                 <div id="front-preview" class="text-gray-600">
                     Content will appear here...
                 </div>
+                <div id="front-image-preview" class="mt-3"></div>
             </div>
 
             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[200px]">
@@ -165,10 +288,53 @@
                 <div id="back-preview" class="text-gray-600">
                     Content will appear here...
                 </div>
+                <div id="back-image-preview" class="mt-3"></div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.custom-file-input {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.file-input-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 16px;
+    background-color: #f9fafb;
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.file-input-label:hover {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
+    color: #374151;
+}
+
+.file-input-label:active {
+    background-color: #e5e7eb;
+}
+
+.file-input-text {
+    margin-left: 8px;
+}
+
+.file-name {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #059669;
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -176,12 +342,27 @@ document.addEventListener('DOMContentLoaded', function() {
     const backText = document.getElementById('back_text');
     const frontLatex = document.getElementById('front_latex');
     const backLatex = document.getElementById('back_latex');
+    const frontImage = document.getElementById('front_image');
+    const backImage = document.getElementById('back_image');
     const frontPreview = document.getElementById('front-preview');
     const backPreview = document.getElementById('back-preview');
+    const frontImagePreview = document.getElementById('front-image-preview');
+    const backImagePreview = document.getElementById('back-image-preview');
+    const frontFileName = document.getElementById('front-file-name');
+    const backFileName = document.getElementById('back-file-name');
 
     function updatePreview() {
-        let frontContent = frontText.value;
-        if (frontLatex.value) {
+        // Front preview
+        let frontContent = '';
+        if (frontText) {
+            if (frontText.tagName === 'TEXTAREA') {
+                frontContent = frontText.value;
+            } else {
+                frontContent = `<div class="font-semibold text-lg">${frontText.value}</div>`;
+            }
+        }
+        
+        if (frontLatex && frontLatex.value) {
             frontContent += (frontContent ? '<br><br>' : '') + 
                            '<div class="bg-gray-100 p-3 rounded font-mono text-sm">' + 
                            'LaTeX: ' + frontLatex.value + 
@@ -189,8 +370,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         frontPreview.innerHTML = frontContent || 'Content will appear here...';
 
-        let backContent = backText.value;
-        if (backLatex.value) {
+        // Back preview
+        let backContent = backText ? backText.value : '';
+        if (backLatex && backLatex.value) {
             backContent += (backContent ? '<br><br>' : '') + 
                           '<div class="bg-gray-100 p-3 rounded font-mono text-sm">' + 
                           'LaTeX: ' + backLatex.value + 
@@ -199,9 +381,56 @@ document.addEventListener('DOMContentLoaded', function() {
         backPreview.innerHTML = backContent || 'Content will appear here...';
     }
 
-    [frontText, backText, frontLatex, backLatex].forEach(element => {
-        element.addEventListener('input', updatePreview);
-    });
+    function handleImagePreview(input, previewElement, fileNameElement) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            
+            // Update file name display
+            fileNameElement.textContent = `Selected: ${file.name}`;
+            fileNameElement.classList.remove('hidden');
+            
+            // Update preview image
+            reader.onload = function(e) {
+                previewElement.innerHTML = '<img src="' + e.target.result + '" class="max-w-full h-auto rounded-lg border border-gray-300" alt="Preview">';
+            }
+            reader.readAsDataURL(file);
+        } else {
+            fileNameElement.classList.add('hidden');
+            previewElement.innerHTML = '';
+        }
+    }
+
+    function handleFileInputChange(input, fileNameElement) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            fileNameElement.textContent = `Selected: ${file.name}`;
+            fileNameElement.classList.remove('hidden');
+        } else {
+            fileNameElement.classList.add('hidden');
+        }
+    }
+
+    // Add event listeners for text inputs
+    if (frontText) frontText.addEventListener('input', updatePreview);
+    if (backText) backText.addEventListener('input', updatePreview);
+    if (frontLatex) frontLatex.addEventListener('input', updatePreview);
+    if (backLatex) backLatex.addEventListener('input', updatePreview);
+
+    // Add event listeners for file inputs
+    if (frontImage) {
+        frontImage.addEventListener('change', function() {
+            handleFileInputChange(this, frontFileName);
+            handleImagePreview(this, frontImagePreview, frontFileName);
+        });
+    }
+
+    if (backImage) {
+        backImage.addEventListener('change', function() {
+            handleFileInputChange(this, backFileName);
+            handleImagePreview(this, backImagePreview, backFileName);
+        });
+    }
 
     updatePreview();
 });
