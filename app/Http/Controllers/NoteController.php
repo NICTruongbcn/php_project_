@@ -6,10 +6,7 @@ use App\Models\Note;
 use Illuminate\Http\Request;
 use App\Helpers\AuthHelper;
 use Illuminate\Support\Facades\Log;
-/**
- * @param Request $request
- * @return \Illuminate\Http\RedirectResponse
- */
+
 class NoteController extends Controller
 {
     public function create()
@@ -18,7 +15,7 @@ class NoteController extends Controller
     }
 
     public function store(Request $request)
-    {        $note = null;
+    {        
 
         try {
             $request->validate([
@@ -44,8 +41,8 @@ class NoteController extends Controller
             Log::info('Note created successfully:', ['note_id' => $note->id]);
 
             if ($request->type === 'normal') {
-    return redirect()->route('normal-notes.show', $note->id)
-                ->with('success', 'Note created successfully!');
+                return redirect()->route('normal-notes.show', $note->id)
+                         ->with('success', 'Note created successfully!');
 }
             else
             {
@@ -75,14 +72,7 @@ class NoteController extends Controller
         return view('notes.show', compact('note', 'pages'));
     }
 
-    public function edit(Note $note)
-    {
-        if ($note->user_id !== AuthHelper::id()) {
-            abort(403);
-        }
 
-        return view('notes.edit', compact('note'));
-    }
 
 
     public function destroy(Note $note)

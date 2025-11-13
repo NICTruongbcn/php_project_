@@ -9,6 +9,8 @@ return new class extends Migration {
         Schema::create('notes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+             $table->string('study_method')->default('SM2');
+             $table->timestamp('next_review_at')->nullable();
             $table->string('title');
             $table->text('description')->nullable();
             $table->enum('type', ['normal', 'vocab', 'formula'])->default('normal');

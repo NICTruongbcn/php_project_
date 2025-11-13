@@ -24,7 +24,6 @@
             <?php echo csrf_field(); ?>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Normal Note -->
                 <label class="relative cursor-pointer">
                     <input type="radio" name="type" value="normal" class="hidden peer" <?php echo e(old('type', 'normal') === 'normal' ? 'checked' : ''); ?>>
                     <div class="border-2 border-gray-200 rounded-lg p-6 transition-all duration-300 hover:border-blue-500 peer-checked:border-blue-500 peer-checked:bg-blue-50 h-full">
@@ -40,7 +39,6 @@
                     </div>
                 </label>
 
-                <!-- Vocabulary Note -->
                 <label class="relative cursor-pointer">
                     <input type="radio" name="type" value="vocab" class="hidden peer" <?php echo e(old('type') === 'vocab' ? 'checked' : ''); ?>>
                     <div class="border-2 border-gray-200 rounded-lg p-6 transition-all duration-300 hover:border-green-500 peer-checked:border-green-500 peer-checked:bg-green-50 h-full">
@@ -56,7 +54,6 @@
                     </div>
                 </label>
 
-                <!-- Formula Note -->
                 <label class="relative cursor-pointer">
                     <input type="radio" name="type" value="formula" class="hidden peer" <?php echo e(old('type') === 'formula' ? 'checked' : ''); ?>>
                     <div class="border-2 border-gray-200 rounded-lg p-6 transition-all duration-300 hover:border-purple-500 peer-checked:border-purple-500 peer-checked:bg-purple-50 h-full">
@@ -74,7 +71,6 @@
             </div>
 
             <div class="space-y-6">
-                <!-- Title -->
                 <div>
                     <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
                         Note Title *
@@ -95,7 +91,6 @@ endif;
 unset($__errorArgs, $__bag); ?>
                 </div>
 
-                <!-- Subject Field (only for formula notes) -->
                 <div id="subject-field" class="hidden">
                     <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">
                         Subject *
@@ -122,7 +117,6 @@ endif;
 unset($__errorArgs, $__bag); ?>
                 </div>
 
-                <!-- Description -->
                 <div>
                     <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
                         Description (Optional)
@@ -179,7 +173,6 @@ document.addEventListener('DOMContentLoaded', function() {
         input.addEventListener('change', toggleSubjectField);
     });
 
-    // Initialize on page load
     toggleSubjectField();
 });
 </script>

@@ -4,7 +4,6 @@
 
 <?php $__env->startSection('content'); ?>
 <div class="max-w-4xl mx-auto px-4 py-8">
-    <!-- Session Info -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
@@ -26,10 +25,8 @@
         </div>
     </div>
 
-    <!-- Flashcard -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 mb-6">
         <div class="max-w-2xl mx-auto text-center">
-            <!-- Front Content -->
             <div id="front-content" class="mb-8">
                 <h3 class="text-lg font-semibold text-gray-700 mb-4">
                     <?php if($note->type === 'vocab'): ?> Term
@@ -64,7 +61,6 @@
                 </div>
             </div>
 
-            <!-- Back Content (Initially Hidden) -->
             <div id="back-content" class="hidden mb-8">
                 <h3 class="text-lg font-semibold text-gray-700 mb-4">
                     <?php if($note->type === 'vocab'): ?> Definition
@@ -95,7 +91,6 @@
                 </div>
             </div>
 
-            <!-- Controls -->
             <div id="show-answer-control" class="mb-6">
                 <button onclick="showAnswer()" 
                         class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
@@ -125,7 +120,6 @@
         </div>
     </div>
 
-    <!-- Session Stats -->
     <div class="grid grid-cols-4 gap-4 text-center">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div class="text-2xl font-bold text-<?php echo e($methodConfig['color']); ?>-600"><?php echo e($currentItem->queue_position); ?></div>
@@ -160,7 +154,6 @@
     transform: scale(1.1);
 }
 
-/* Color classes for ratings */
 .bg-blue-100 { background-color: #dbeafe; }
 .border-blue-500 { border-color: #3b82f6; }
 .bg-green-100 { background-color: #dcfce7; }
@@ -177,7 +170,6 @@ let answerShown = false;
 let sessionStartTime = new Date('<?php echo e($session->started_at); ?>').getTime();
 let timerInterval;
 
-// Real-time timer updates - FIXED với bảo vệ chống âm
 function updateLiveTimer() {
     const now = Date.now();
     let elapsedMs = now - sessionStartTime;
@@ -185,7 +177,6 @@ function updateLiveTimer() {
     // Đảm bảo không âm
     if (elapsedMs < 0) {
         elapsedMs = 0;
-        // Reset sessionStartTime nếu cần
         sessionStartTime = now;
     }
     
@@ -197,7 +188,6 @@ function updateLiveTimer() {
     document.getElementById('live-seconds').textContent = seconds.toString().padStart(2, '0');
 }
 
-// Start live timer
 timerInterval = setInterval(updateLiveTimer, 1000);
 
 function showAnswer() {
@@ -206,13 +196,12 @@ function showAnswer() {
     document.getElementById('show-answer-control').classList.add('hidden');
     document.getElementById('rating-controls').classList.remove('hidden');
     answerShown = true;
-    startTime = Date.now(); // Reset timer for response time measurement
+    startTime = Date.now(); 
 }
 
 function rateAnswer(rating) {
-    const responseTime = Math.floor((Date.now() - startTime) / 1000); // in seconds
+    const responseTime = Math.floor((Date.now() - startTime) / 1000); 
     
-    // Highlight selected rating
     document.querySelectorAll('.rating-btn').forEach(btn => {
         const btnRating = parseInt(btn.dataset.rating);
         btn.classList.remove('bg-blue-100', 'border-blue-500',
@@ -226,10 +215,8 @@ function rateAnswer(rating) {
         }
     });
 
-    // Stop timer before navigation
     clearInterval(timerInterval);
 
-    // Send review to server
     fetch('<?php echo e(route("study.review", $session)); ?>', {
         method: 'POST',
         headers: {
@@ -262,12 +249,10 @@ function rateAnswer(rating) {
     .catch(error => {
         console.error('Error:', error);
         alert('Error submitting review. Please try again.');
-        // Restart timer if there was an error
         timerInterval = setInterval(updateLiveTimer, 1000);
     });
 }
 
-// Keyboard shortcuts
 document.addEventListener('keydown', function(event) {
     if (event.code === 'Space' && !answerShown) {
         event.preventDefault();
@@ -278,7 +263,6 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-// Swipe functionality for mobile
 let startX = 0;
 let endX = 0;
 
@@ -298,12 +282,11 @@ function handleSwipe() {
         if (diff > 0 && !answerShown) {
             showAnswer();
         } else if (diff < 0 && answerShown) {
-            rateAnswer(4); // Swipe left = rating 4 (Good)
+            rateAnswer(4); 
         }
     }
 }
 
-// Clean up on page unload
 window.addEventListener('beforeunload', function() {
     clearInterval(timerInterval);
 });

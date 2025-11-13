@@ -165,7 +165,6 @@
                     clearInterval(countdown);
                     overlay.classList.add('hidden');
                     document.body.style.overflow = 'auto';
-                    // Trigger break end event
                     if (typeof onBreakEnd === 'function') {
                         onBreakEnd();
                     }

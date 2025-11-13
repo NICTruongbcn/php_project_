@@ -21,9 +21,6 @@
             </div>
         </section>
 
-        <section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-        </section>
-
         <section class="bg-white rounded-lg shadow-sm p-6 mb-8 border border-gray-200">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-semibold text-gray-800">Your Notes</h3>
@@ -35,9 +32,6 @@
             @if($notes->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($notes as $note)
-                        @php
-                            $studyStatus = $note->getStudyStatus();
-                        @endphp
                         <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center space-x-2">
@@ -61,13 +55,17 @@
                                     </span>
                                 </div>
                                 
-                                @if($studyStatus === 'ready_for_review')
-                                    <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">Ready for Review</span>
-                                @elseif(is_array($studyStatus) && $studyStatus['status'] === 'scheduled')
-                                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full" 
-                                          title="Next review: {{ $studyStatus['next_review']->format('M d, Y') }}">
-                                        Review on {{ $studyStatus['next_review']->format('M d') }}
-                                    </span>
+                                @if($note->study_method && $note->next_review_at)
+                                    @if($note->next_review_at->gt(now()))
+                                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full" 
+                                              title="Next review: {{ $note->next_review_at->format('M d, Y') }}">
+                                            Review: {{ $note->next_review_at->format('M d') }}
+                                        </span>
+                                    @else
+                                        <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                                            Ready for Review
+                                        </span>
+                                    @endif
                                 @elseif($note->is_completed)
                                     <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Completed</span>
                                 @else
@@ -80,14 +78,25 @@
                                 <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $note->description }}</p>
                             @endif
                             
-                            <!-- Ẩn pages count cho normal note -->
+                            @if($note->study_method)
+                                @php
+                                    $studyMethods = app('App\Http\Controllers\StudyController')->getStudyMethods();
+                                    $methodConfig = $studyMethods[$note->study_method] ?? $studyMethods['SM2'];
+                                @endphp
+                                <div class="flex items-center space-x-2 mb-3">
+                                    <div class="w-4 h-4 bg-{{ $methodConfig['color'] }}-100 rounded flex items-center justify-center">
+                                        <i class="{{ $methodConfig['icon'] }} text-{{ $methodConfig['color'] }}-600 text-xs"></i>
+                                    </div>
+                                    <span class="text-xs text-gray-500">{{ $methodConfig['name'] }}</span>
+                                </div>
+                            @endif
+                            
                             @if($note->type !== 'normal')
                                 <div class="flex items-center justify-between text-sm text-gray-500 mb-3">
                                     <span>{{ $note->pages->count() }}/{{ $note->page_limit }} pages</span>
                                     <span>{{ $note->created_at->format('M d, Y') }}</span>
                                 </div>
                             @else
-                                <!-- Chỉ hiển thị ngày tạo cho normal note -->
                                 <div class="text-sm text-gray-500 mb-3">
                                     <span>{{ $note->created_at->format('M d, Y') }}</span>
                                 </div>
@@ -105,16 +114,16 @@
                                     </a>
                                 @endif
                                 @if($note->type !== 'normal')
-                                    @if($studyStatus === 'ready_for_review' || $studyStatus === 'new')
+                                    @if($note->study_method && $note->next_review_at && $note->next_review_at->gt(now()))
+                                        <a href="{{ route('study.show', $note->id) }}" 
+                                           class="flex-1 bg-orange-100 text-orange-700 text-center py-2 rounded hover:bg-orange-200 transition-colors text-sm">
+                                            Review
+                                        </a>
+                                    @else
                                         <a href="{{ route('study.show', $note->id) }}" 
                                            class="flex-1 bg-green-100 text-green-700 text-center py-2 rounded hover:bg-green-200 transition-colors text-sm">
                                             Study
                                         </a>
-                                    @else
-                                        <span class="flex-1 bg-gray-100 text-gray-400 text-center py-2 rounded cursor-not-allowed text-sm"
-                                              title="Next review: {{ is_array($studyStatus) ? $studyStatus['next_review']->format('M d, Y') : 'Not available' }}">
-                                            Study
-                                        </span>
                                     @endif
                                 @endif
                             </div>
@@ -133,9 +142,6 @@
                     </a>
                 </div>
             @endif
-        </section>
-
-        <section class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
         </section>
     </div>
 @endsection

@@ -18,14 +18,7 @@ class NormalNoteController extends Controller
         return view('normal-notes.show', compact('note'));
     }
 
-    public function edit(Note $note)
-    {
-        if ($note->user_id !== AuthHelper::id() || $note->type !== 'normal') {
-            abort(403);
-        }
 
-        return view('normal-notes.edit', compact('note'));
-    }
 
     public function updateContent(Request $request, Note $note)
     {

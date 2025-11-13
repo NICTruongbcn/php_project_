@@ -21,9 +21,6 @@
             </div>
         </section>
 
-        <section class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
-        </section>
-
         <section class="bg-white rounded-lg shadow-sm p-6 mb-8 border border-gray-200">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-semibold text-gray-800">Your Notes</h3>
@@ -35,9 +32,6 @@
             <?php if($notes->count() > 0): ?>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <?php $__currentLoopData = $notes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $note): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <?php
-                            $studyStatus = $note->getStudyStatus();
-                        ?>
                         <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center space-x-2">
@@ -62,14 +56,18 @@
                                     </span>
                                 </div>
                                 
-                                <?php if($studyStatus === 'ready_for_review'): ?>
-                                    <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">Ready for Review</span>
-                                <?php elseif(is_array($studyStatus) && $studyStatus['status'] === 'scheduled'): ?>
-                                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full" 
-                                          title="Next review: <?php echo e($studyStatus['next_review']->format('M d, Y')); ?>">
-                                        Review on <?php echo e($studyStatus['next_review']->format('M d')); ?>
+                                <?php if($note->study_method && $note->next_review_at): ?>
+                                    <?php if($note->next_review_at->gt(now())): ?>
+                                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full" 
+                                              title="Next review: <?php echo e($note->next_review_at->format('M d, Y')); ?>">
+                                            Review: <?php echo e($note->next_review_at->format('M d')); ?>
 
-                                    </span>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                                            Ready for Review
+                                        </span>
+                                    <?php endif; ?>
                                 <?php elseif($note->is_completed): ?>
                                     <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Completed</span>
                                 <?php else: ?>
@@ -82,14 +80,25 @@
                                 <p class="text-sm text-gray-600 mb-3 line-clamp-2"><?php echo e($note->description); ?></p>
                             <?php endif; ?>
                             
-                            <!-- Ẩn pages count cho normal note -->
+                            <?php if($note->study_method): ?>
+                                <?php
+                                    $studyMethods = app('App\Http\Controllers\StudyController')->getStudyMethods();
+                                    $methodConfig = $studyMethods[$note->study_method] ?? $studyMethods['SM2'];
+                                ?>
+                                <div class="flex items-center space-x-2 mb-3">
+                                    <div class="w-4 h-4 bg-<?php echo e($methodConfig['color']); ?>-100 rounded flex items-center justify-center">
+                                        <i class="<?php echo e($methodConfig['icon']); ?> text-<?php echo e($methodConfig['color']); ?>-600 text-xs"></i>
+                                    </div>
+                                    <span class="text-xs text-gray-500"><?php echo e($methodConfig['name']); ?></span>
+                                </div>
+                            <?php endif; ?>
+                            
                             <?php if($note->type !== 'normal'): ?>
                                 <div class="flex items-center justify-between text-sm text-gray-500 mb-3">
                                     <span><?php echo e($note->pages->count()); ?>/<?php echo e($note->page_limit); ?> pages</span>
                                     <span><?php echo e($note->created_at->format('M d, Y')); ?></span>
                                 </div>
                             <?php else: ?>
-                                <!-- Chỉ hiển thị ngày tạo cho normal note -->
                                 <div class="text-sm text-gray-500 mb-3">
                                     <span><?php echo e($note->created_at->format('M d, Y')); ?></span>
                                 </div>
@@ -107,16 +116,16 @@
                                     </a>
                                 <?php endif; ?>
                                 <?php if($note->type !== 'normal'): ?>
-                                    <?php if($studyStatus === 'ready_for_review' || $studyStatus === 'new'): ?>
+                                    <?php if($note->study_method && $note->next_review_at && $note->next_review_at->gt(now())): ?>
+                                        <a href="<?php echo e(route('study.show', $note->id)); ?>" 
+                                           class="flex-1 bg-orange-100 text-orange-700 text-center py-2 rounded hover:bg-orange-200 transition-colors text-sm">
+                                            Review
+                                        </a>
+                                    <?php else: ?>
                                         <a href="<?php echo e(route('study.show', $note->id)); ?>" 
                                            class="flex-1 bg-green-100 text-green-700 text-center py-2 rounded hover:bg-green-200 transition-colors text-sm">
                                             Study
                                         </a>
-                                    <?php else: ?>
-                                        <span class="flex-1 bg-gray-100 text-gray-400 text-center py-2 rounded cursor-not-allowed text-sm"
-                                              title="Next review: <?php echo e(is_array($studyStatus) ? $studyStatus['next_review']->format('M d, Y') : 'Not available'); ?>">
-                                            Study
-                                        </span>
                                     <?php endif; ?>
                                 <?php endif; ?>
                             </div>
@@ -135,9 +144,6 @@
                     </a>
                 </div>
             <?php endif; ?>
-        </section>
-
-        <section class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
         </section>
     </div>
 <?php $__env->stopSection(); ?>

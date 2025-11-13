@@ -23,7 +23,6 @@
             </div>
             <div class="bg-gray-50 rounded-lg p-6">
                 <?php
-                    // Đảm bảo thời gian luôn dương
                     $safeTotalTime = max(0, $totalTime);
                     $minutes = floor($safeTotalTime / 60);
                     $seconds = $safeTotalTime % 60;

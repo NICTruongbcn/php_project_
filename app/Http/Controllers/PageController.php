@@ -85,15 +85,6 @@ class PageController extends Controller
             $backImagePath = $request->file('back_image')->store('pages', 'public');
         }
 
-        $meta = [
-            'difficulty' => $request->difficulty ?? 'medium',
-            'tags' => $request->tags ? array_map('trim', explode(',', $request->tags)) : [],
-        ];
-
-        if ($note->type === 'vocab') {
-            $meta['word_type'] = $request->word_type ?? 'general';
-        }
-
         Page::create([
             'note_id' => $note->id,
             'position' => $position,
@@ -104,7 +95,6 @@ class PageController extends Controller
             'front_image' => $frontImagePath,
             'back_image' => $backImagePath,
             'source' => 'user',
-            'meta' => json_encode($meta),
         ]);
 
         $message = 'Page added successfully!';
@@ -193,15 +183,6 @@ class PageController extends Controller
             $backImagePath = $request->file('back_image')->store('pages', 'public');
         }
 
-        $meta = [
-            'difficulty' => $request->difficulty ?? 'medium',
-            'tags' => $request->tags ? array_map('trim', explode(',', $request->tags)) : [],
-        ];
-
-        if ($note->type === 'vocab') {
-            $meta['word_type'] = $request->word_type ?? 'general';
-        }
-
         $page->update([
             'front_text' => $request->front_text,
             'back_text' => $request->back_text,
@@ -209,7 +190,6 @@ class PageController extends Controller
             'back_latex' => $request->back_latex,
             'front_image' => $frontImagePath,
             'back_image' => $backImagePath,
-            'meta' => json_encode($meta),
         ]);
 
         return redirect()->route('notes.show', $page->note_id)
@@ -228,7 +208,6 @@ class PageController extends Controller
         if ($page->back_image) {
             Storage::disk('public')->delete($page->back_image);
         }
-
         $noteId = $page->note_id;
         $page->delete();
 

@@ -6,11 +6,9 @@ use App\Models\Note;
 use App\Models\StudySession;
 use App\Models\SessionQueueItem;
 use App\Models\Review;
-use App\Models\Page;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Helpers\AuthHelper;
-use Illuminate\Support\Facades\DB;
 
 class StudyController extends Controller
 {
@@ -25,12 +23,10 @@ class StudyController extends Controller
                             ->with('error', 'Please add some pages to this note before studying.');
         }
 
-
-        $nextReviewSession = $this->getNextReviewSession($note);
-        $canStudyNow = $this->canStudyNow($note);
-
         $studyMethods = $this->getStudyMethods();
-        return view('study.show', compact('note', 'studyMethods', 'nextReviewSession', 'canStudyNow'));
+        $nextReviewDate = $this->calculateNextReviewDate($note);
+        
+        return view('study.show', compact('note', 'studyMethods', 'nextReviewDate'));
     }
 
     public function start(Request $request, Note $note)
@@ -39,15 +35,14 @@ class StudyController extends Controller
             abort(403);
         }
 
-        if (!$this->canStudyNow($note)) {
-            return redirect()->back()
-                            ->with('error', 'Study session is locked until the next review date.');
-        }
-
         $request->validate([
             'study_method' => 'required|in:SM2,Leitner,Pomodoro,Custom',
             'study_time' => 'required|integer|min:5|max:120',
             'break_time' => 'required|integer|min:1|max:30',
+        ]);
+
+        $note->update([
+            'study_method' => $request->study_method
         ]);
 
         $startedAt = Carbon::now();
@@ -117,6 +112,9 @@ class StudyController extends Controller
                 'ended_at' => $now,
                 'total_seconds' => $now->diffInSeconds($started),
             ]);
+            
+            $this->updateNextReviewDate($session->note);
+            
             return redirect()->route('study.complete', $session);
         }
 
@@ -185,6 +183,8 @@ class StudyController extends Controller
                 'total_seconds' => now()->diffInSeconds($session->started_at),
             ]);
 
+            $this->updateNextReviewDate($session->note);
+
             return response()->json([
                 'success' => true,
                 'completed' => true,
@@ -221,6 +221,8 @@ class StudyController extends Controller
                 'ended_at' => $now,
                 'total_seconds' => $totalSeconds,
             ]);
+
+            $this->updateNextReviewDate($session->note);
         }
 
         $totalReviews = $session->reviews()->count();
@@ -242,7 +244,7 @@ class StudyController extends Controller
         return view('study.break', compact('session', 'breakTime'));
     }
 
-    private function getStudyMethods()
+    public function getStudyMethods()
     {
         return [
             'SM2' => [
@@ -301,14 +303,14 @@ class StudyController extends Controller
                 'ease_factor' => max(1.3, $queueItem->ease_factor - 0.2),
                 'status' => 'again',
                 'queue_position' => $maxPosition + 1,
-                'next_review_at' => now()->addMinutes(10), 
+                'next_review_at' => now()->addMinutes(10),
                 'last_quality' => $quality,
                 'last_reviewed_at' => now(),
             ]);
         } else {
             $newRepetition = $queueItem->repetition_count + 1;
             
-            $intervals = [1, 2, 4, 8, 16, 30]; 
+            $intervals = [1, 2, 4, 8, 16, 30];
             
             if ($newRepetition <= count($intervals)) {
                 $interval = $intervals[$newRepetition - 1];
@@ -317,7 +319,7 @@ class StudyController extends Controller
             }
 
             $newEase = $queueItem->ease_factor + (0.1 - (5 - $quality) * (0.08 + (5 - $quality) * 0.02));
-            $newEase = max(1.3, min(2.5, $newEase)); 
+            $newEase = max(1.3, min(2.5, $newEase));
 
             $queueItem->update([
                 'repetition_count' => $newRepetition,
@@ -351,39 +353,33 @@ class StudyController extends Controller
         return view('study.review-sessions', compact('reviewSessions'));
     }
 
-    public function startReview(StudySession $session)
+    public function startReview(Note $note)
     {
-        if ($session->user_id !== AuthHelper::id()) {
+        if ($note->user_id !== AuthHelper::id()) {
             abort(403);
         }
 
-        $session->queueItems()
-            ->where('next_review_at', '<=', now())
-            ->where('status', 'done')
-            ->update([
-                'status' => 'pending',
-                'queue_position' => DB::raw('queue_position + 1000') 
-            ]);
+        if ($note->next_review_at && $note->next_review_at->gt(now())) {
+            return redirect()->back()
+                            ->with('error', 'Next review is scheduled for ' . $note->next_review_at->format('M d, Y'));
+        }
 
-        return redirect()->route('study.session', $session)
-                        ->with('success', 'Review session started!');
-    }
+        // Tạo session review mới
+        $startedAt = Carbon::now();
 
-    private function getNextReviewSession(Note $note)
-    {
-        return SessionQueueItem::whereHas('session', function($query) use ($note) {
-                $query->where('note_id', $note->id)
-                      ->where('user_id', AuthHelper::id());
-            })
-            ->where('status', 'done')
-            ->where('next_review_at', '>', now())
-            ->orderBy('next_review_at', 'asc')
-            ->first();
-    }
+        $session = StudySession::create([
+            'user_id' => AuthHelper::id(),
+            'note_id' => $note->id,
+            'method' => $note->study_method,
+            'config' => json_encode([
+                'study_time' => 25,
+                'break_time' => 5,
+                'intervals' => $this->getIntervals($note->study_method),
+            ]),
+            'started_at' => $startedAt,
+        ]);
 
-    private function canStudyNow(Note $note)
-    {
-        $dueItems = SessionQueueItem::whereHas('session', function($query) use ($note) {
+        $queueItems = SessionQueueItem::whereHas('session', function($query) use ($note) {
                 $query->where('note_id', $note->id)
                       ->where('user_id', AuthHelper::id());
             })
@@ -395,8 +391,58 @@ class StudyController extends Controller
                             ->where('next_review_at', '<=', now());
                       });
             })
-            ->exists();
+            ->with('page')
+            ->get();
 
-        return $dueItems;
+        foreach ($queueItems as $index => $queueItem) {
+            SessionQueueItem::create([
+                'session_id' => $session->id,
+                'page_id' => $queueItem->page_id,
+                'queue_position' => $index + 1,
+                'status' => 'pending',
+                'next_review_at' => $startedAt,
+                'ease_factor' => $queueItem->ease_factor,
+                'interval_days' => $queueItem->interval_days,
+                'repetition_count' => $queueItem->repetition_count,
+            ]);
+        }
+
+        $note->update(['next_review_at' => null]);
+
+        return redirect()->route('study.session', $session)
+                        ->with('success', 'Review session started!');
+    }
+
+    private function calculateNextReviewDate(Note $note)
+    {
+        if (!$note->study_method) {
+            return null;
+        }
+
+        $nextReview = SessionQueueItem::whereHas('session', function($query) use ($note) {
+                $query->where('note_id', $note->id)
+                      ->where('user_id', AuthHelper::id());
+            })
+            ->where('status', 'done')
+            ->where('next_review_at', '>', now())
+            ->orderBy('next_review_at', 'asc')
+            ->first();
+
+        return $nextReview ? $nextReview->next_review_at : null;
+    }
+
+    private function updateNextReviewDate(Note $note)
+    {
+        $nextReviewDate = $this->calculateNextReviewDate($note);
+        $note->update(['next_review_at' => $nextReviewDate]);
+    }
+
+    public function canReviewNow(Note $note)
+    {
+        if (!$note->study_method) {
+            return true; 
+        }
+
+        return !$note->next_review_at || $note->next_review_at->lte(now());
     }
 }

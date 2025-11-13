@@ -4,7 +4,6 @@
 
 <?php $__env->startSection('content'); ?>
 <div class="max-w-6xl mx-auto px-4 py-8">
-    <!-- Header -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
             <div>
@@ -63,7 +62,6 @@
             </div>
         </div>
 
-        <!-- Progress Bar -->
         <div class="mt-4">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-medium text-gray-700">Progress</span>
@@ -90,7 +88,6 @@
         </div>
     <?php endif; ?>
 
-    <!-- Pages List -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="border-b border-gray-200 px-6 py-4">
             <h2 class="text-xl font-semibold text-gray-800">Pages (<?php echo e($pages->count()); ?>)</h2>
@@ -110,7 +107,6 @@
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <!-- Front Content -->
                                     <div>
                                         <h4 class="font-semibold text-gray-700 mb-2 text-sm">
                                             <?php if($note->type === 'vocab'): ?> Term
@@ -145,7 +141,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- Back Content -->
                                     <div>
                                         <h4 class="font-semibold text-gray-700 mb-2 text-sm">
                                             <?php if($note->type === 'vocab'): ?> Definition
@@ -216,7 +211,6 @@
         <?php endif; ?>
     </div>
 
-    <!-- Action Buttons -->
     <div class="flex justify-between items-center mt-6">
         <a href="<?php echo e(route('dashboard')); ?>" 
            class="text-blue-600 hover:text-blue-800 transition-colors font-semibold">

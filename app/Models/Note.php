@@ -17,7 +17,8 @@ class Note extends Model
         'description',
         'is_private',
         'is_completed',
-        'page_limit'
+        'page_limit','study_method',
+    'next_review_at',
     ];
 
     protected $casts = [
@@ -25,6 +26,7 @@ class Note extends Model
         'is_completed' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'next_review_at' => 'datetime',
     ];
 
 public function getStudyStatus()

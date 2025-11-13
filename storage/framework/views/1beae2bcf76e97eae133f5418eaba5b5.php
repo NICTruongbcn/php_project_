@@ -251,7 +251,6 @@
 
 <?php $__env->startSection('scripts'); ?>
     <script>
-        // Smooth scroll script đã có trong layout
         console.log('Welcome page loaded');
     </script>
 <?php $__env->stopSection(); ?>
