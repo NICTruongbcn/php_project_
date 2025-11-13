@@ -1,0 +1,148 @@
+
+
+<?php $__env->startSection('title', 'Study - ' . $note->title . ' - MemoryMaster'); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div class="mb-8">
+            <div class="flex items-center space-x-3 mb-4">
+                <?php if($note->type === 'vocab'): ?>
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-book text-green-600"></i>
+                    </div>
+                <?php elseif($note->type === 'formula'): ?>
+                    <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-square-root-alt text-purple-600"></i>
+                    </div>
+                <?php else: ?>
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-sticky-note text-blue-600"></i>
+                    </div>
+                <?php endif; ?>
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-800">Study: <?php echo e($note->title); ?></h1>
+                    <p class="text-gray-600"><?php echo e($note->pages()->count()); ?> pages ready to study</p>
+                </div>
+            </div>
+
+            <!-- Thêm thông báo về lịch ôn tập -->
+            <?php if(!$canStudyNow && $nextReviewSession): ?>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-clock text-blue-600 text-sm"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-blue-800">Next Review Scheduled</h4>
+                            <p class="text-blue-600 text-sm">
+                                Your next review session is scheduled for 
+                                <strong><?php echo e($nextReviewSession->next_review_at->format('M d, Y \a\t H:i')); ?></strong>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <form method="POST" action="<?php echo e(route('study.start', $note->id)); ?>" class="space-y-6" 
+              id="study-form" <?php echo e(!$canStudyNow ? 'onsubmit="return false;"' : ''); ?>>
+            <?php echo csrf_field(); ?>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <?php $__currentLoopData = $studyMethods; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $method): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <label class="relative cursor-pointer">
+                    <input type="radio" name="study_method" value="<?php echo e($key); ?>" 
+                           class="hidden peer" <?php echo e($key === 'SM2' ? 'checked' : ''); ?>>
+                    <div class="border-2 border-gray-200 rounded-lg p-6 transition-all duration-300 
+                                hover:border-<?php echo e($method['color']); ?>-500 peer-checked:border-<?php echo e($method['color']); ?>-500 
+                                peer-checked:bg-<?php echo e($method['color']); ?>-50 h-full">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="w-10 h-10 bg-<?php echo e($method['color']); ?>-100 rounded-lg flex items-center justify-center">
+                                <i class="<?php echo e($method['icon']); ?> text-<?php echo e($method['color']); ?>-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-gray-800"><?php echo e($method['name']); ?></h3>
+                                <p class="text-sm text-gray-600"><?php echo e($method['description']); ?></p>
+                            </div>
+                        </div>
+                        <div class="text-xs text-<?php echo e($method['color']); ?>-600 mt-2">
+                            <i class="fas fa-clock mr-1"></i>
+                            Study: <?php echo e($method['default_study_time']); ?>min • Break: <?php echo e($method['default_break_time']); ?>min
+                        </div>
+                    </div>
+                </label>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-gray-200 pt-6">
+                <div>
+                    <label for="study_time" class="block text-sm font-medium text-gray-700 mb-2">
+                        Study Time (minutes)
+                    </label>
+                    <input type="number" name="study_time" id="study_time" 
+                           min="5" max="120" value="25"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                </div>
+
+                <div>
+                    <label for="break_time" class="block text-sm font-medium text-gray-700 mb-2">
+                        Break Time (minutes)
+                    </label>
+                    <input type="number" name="break_time" id="break_time" 
+                           min="1" max="30" value="5"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+                <a href="<?php echo e(route('notes.show', $note->id)); ?>" 
+                   class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    ← Back to Note
+                </a>
+                
+                <?php if($canStudyNow): ?>
+                    <button type="submit"
+                            class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                        Start Studying
+                    </button>
+                <?php else: ?>
+                    <button type="button"
+                            class="px-6 py-3 bg-gray-400 text-white rounded-lg cursor-not-allowed font-semibold"
+                            disabled
+                            title="Next review available on <?php echo e($nextReviewSession->next_review_at->format('M d, Y')); ?>">
+                        Study Session Locked
+                    </button>
+                <?php endif; ?>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const studyMethodInputs = document.querySelectorAll('input[name="study_method"]');
+    
+    studyMethodInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const methodKey = this.value;
+            const methods = <?php echo json_encode($studyMethods, 15, 512) ?>;
+            const method = methods[methodKey];
+            
+            if (method) {
+                document.getElementById('study_time').value = method.default_study_time;
+                document.getElementById('break_time').value = method.default_break_time;
+            }
+        });
+    });
+
+    const studyForm = document.getElementById('study-form');
+    
+    if (!studyForm.getAttribute('onsubmit')) {
+        // Cho phép form submit bình thường
+        studyForm.onsubmit = null;
+    }
+});
+</script>
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\study\NIC\DGL-123(intoduction PHP)\php_project\php_project_\resources\views/study/show.blade.php ENDPATH**/ ?>

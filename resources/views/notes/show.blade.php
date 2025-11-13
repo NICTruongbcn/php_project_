@@ -4,7 +4,6 @@
 
 @section('content')
 <div class="max-w-6xl mx-auto px-4 py-8">
-    <!-- Header -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex items-center justify-between mb-4">
             <div>
@@ -58,16 +57,9 @@
                         + Add Page
                     </a>
                 @endif
-                @if($pages->count() > 0)
-                    <a href="{{ route('study.show', $note->id) }}" 
-                       class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold">
-                        Start Studying
-                    </a>
-                @endif
             </div>
         </div>
 
-        <!-- Progress Bar -->
         <div class="mt-4">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-medium text-gray-700">Progress</span>
@@ -92,7 +84,6 @@
         </div>
     @endif
 
-    <!-- Pages List -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <div class="border-b border-gray-200 px-6 py-4">
             <h2 class="text-xl font-semibold text-gray-800">Pages ({{ $pages->count() }})</h2>
@@ -108,51 +99,20 @@
                                     <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded text-sm font-medium">
                                         #{{ $page->position }}
                                     </span>
-                                    @if($page->meta && isset(json_decode($page->meta, true)['difficulty']))
-                                        @php
-                                            $difficulty = json_decode($page->meta, true)['difficulty'];
-                                            $colorClasses = [
-                                                'easy' => 'bg-green-100 text-green-800',
-                                                'medium' => 'bg-yellow-100 text-yellow-800',
-                                                'hard' => 'bg-red-100 text-red-800'
-                                            ];
-                                        @endphp
-                                        <span class="text-xs font-semibold px-2 py-1 rounded {{ $colorClasses[$difficulty] ?? 'bg-gray-100 text-gray-800' }}">
-                                            {{ ucfirst($difficulty) }}
-                                        </span>
-                                    @endif
-
-                                    <!-- Hiển thị word type cho vocab notes -->
-                                    @if($note->type === 'vocab' && $page->meta && isset(json_decode($page->meta, true)['word_type']))
-                                        @php
-                                            $wordType = json_decode($page->meta, true)['word_type'];
-                                            $wordTypeColors = [
-                                                'noun' => 'bg-blue-100 text-blue-800',
-                                                'verb' => 'bg-green-100 text-green-800', 
-                                                'adjective' => 'bg-yellow-100 text-yellow-800',
-                                                'adverb' => 'bg-purple-100 text-purple-800',
-                                                'phrase' => 'bg-indigo-100 text-indigo-800',
-                                                'idiom' => 'bg-pink-100 text-pink-800',
-                                                'general' => 'bg-gray-100 text-gray-800'
-                                            ];
-                                        @endphp
-                                        <span class="text-xs font-semibold px-2 py-1 rounded {{ $wordTypeColors[$wordType] ?? 'bg-gray-100 text-gray-800' }}">
-                                            {{ ucfirst($wordType) }}
-                                        </span>
-                                    @endif
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <!-- Front Content -->
                                     <div>
                                         <h4 class="font-semibold text-gray-700 mb-2 text-sm">
                                             @if($note->type === 'vocab') Term
                                             @elseif($note->type === 'formula') Formula
-                                            @else Front @endif
+                                            @else Title @endif
                                         </h4>
                                         <div class="text-gray-800">
                                             @if($page->front_text)
                                                 @if($note->type === 'vocab')
+                                                    <div class="font-semibold text-lg text-gray-900 mb-2">{{ $page->front_text }}</div>
+                                                @elseif($note->type === 'normal')
                                                     <div class="font-semibold text-lg text-gray-900 mb-2">{{ $page->front_text }}</div>
                                                 @else
                                                     <p class="mb-2">{{ $page->front_text }}</p>
@@ -175,16 +135,21 @@
                                         </div>
                                     </div>
 
-                                    <!-- Back Content -->
                                     <div>
                                         <h4 class="font-semibold text-gray-700 mb-2 text-sm">
                                             @if($note->type === 'vocab') Definition
                                             @elseif($note->type === 'formula') Explanation
-                                            @else Back @endif
+                                            @else Content @endif
                                         </h4>
                                         <div class="text-gray-800">
                                             @if($page->back_text)
-                                                <p class="mb-2">{{ $page->back_text }}</p>
+                                                @if($note->type === 'normal')
+                                                    <div class="prose max-w-none">
+                                                        {!! nl2br(e($page->back_text)) !!}
+                                                    </div>
+                                                @else
+                                                    <p class="mb-2">{{ $page->back_text }}</p>
+                                                @endif
                                             @endif
                                             @if($page->back_latex)
                                                 <div class="bg-gray-100 p-3 rounded font-mono text-sm mb-2">
@@ -203,34 +168,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Hiển thị example sentence cho vocab notes -->
-                                @if($note->type === 'vocab' && $page->meta && isset(json_decode($page->meta, true)['example_sentence']))
-                                    @php
-                                        $exampleSentence = json_decode($page->meta, true)['example_sentence'];
-                                    @endphp
-                                    @if($exampleSentence)
-                                        <div class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                            <div class="font-semibold text-sm text-blue-800 mb-1">Example Sentence:</div>
-                                            <p class="text-blue-900 italic">"{{ $exampleSentence }}"</p>
-                                        </div>
-                                    @endif
-                                @endif
-
-                                @if($page->meta && isset(json_decode($page->meta, true)['tags']))
-                                    @php
-                                        $tags = json_decode($page->meta, true)['tags'];
-                                    @endphp
-                                    @if(!empty($tags))
-                                        <div class="mt-3 flex flex-wrap gap-1">
-                                            @foreach($tags as $tag)
-                                                <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
-                                                    {{ $tag }}
-                                                </span>
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                @endif
                             </div>
 
                             <div class="flex space-x-2 ml-4">
@@ -266,66 +203,13 @@
         @endif
     </div>
 
-    <!-- Quick Stats -->
-    @if($pages->count() > 0)
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center">
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-layer-group text-blue-600"></i>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600">Total Pages</p>
-                    <p class="text-2xl font-bold text-gray-800">{{ $pages->count() }}</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center">
-                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-check-circle text-green-600"></i>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600">Completion</p>
-                    <p class="text-2xl font-bold text-gray-800">{{ min(round(($pages->count() / $note->page_limit) * 100), 100) }}%</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center">
-                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-clock text-purple-600"></i>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600">Created</p>
-                    <p class="text-2xl font-bold text-gray-800">{{ $note->created_at->format('M d') }}</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    @endif
-
-    <!-- Action Buttons -->
     <div class="flex justify-between items-center mt-6">
         <a href="{{ route('dashboard') }}" 
            class="text-blue-600 hover:text-blue-800 transition-colors font-semibold">
             ← Back to Dashboard
         </a>
         
-        <div class="flex space-x-3">
-            <a href="{{ route('notes.edit', $note->id) }}" 
-               class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
-                Edit Note
-            </a>
-            @if($pages->count() > 0)
-                <a href="{{ route('study.show', $note->id) }}" 
-                   class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold">
-                    Start Studying
-                </a>
-            @endif
-        </div>
+       
     </div>
 </div>
 

@@ -35,6 +35,9 @@
             <?php if($notes->count() > 0): ?>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <?php $__currentLoopData = $notes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $note): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php
+                            $studyStatus = $note->getStudyStatus();
+                        ?>
                         <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center space-x-2">
@@ -58,7 +61,16 @@
 
                                     </span>
                                 </div>
-                                <?php if($note->is_completed): ?>
+                                
+                                <?php if($studyStatus === 'ready_for_review'): ?>
+                                    <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">Ready for Review</span>
+                                <?php elseif(is_array($studyStatus) && $studyStatus['status'] === 'scheduled'): ?>
+                                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full" 
+                                          title="Next review: <?php echo e($studyStatus['next_review']->format('M d, Y')); ?>">
+                                        Review on <?php echo e($studyStatus['next_review']->format('M d')); ?>
+
+                                    </span>
+                                <?php elseif($note->is_completed): ?>
                                     <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Completed</span>
                                 <?php else: ?>
                                     <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">In Progress</span>
@@ -70,26 +82,43 @@
                                 <p class="text-sm text-gray-600 mb-3 line-clamp-2"><?php echo e($note->description); ?></p>
                             <?php endif; ?>
                             
-                            <div class="flex items-center justify-between text-sm text-gray-500 mb-3">
-                                <span><?php echo e($note->pages->count()); ?>/<?php echo e($note->page_limit); ?> pages</span>
-                                <span><?php echo e($note->created_at->format('M d, Y')); ?></span>
-                            </div>
+                            <!-- Ẩn pages count cho normal note -->
+                            <?php if($note->type !== 'normal'): ?>
+                                <div class="flex items-center justify-between text-sm text-gray-500 mb-3">
+                                    <span><?php echo e($note->pages->count()); ?>/<?php echo e($note->page_limit); ?> pages</span>
+                                    <span><?php echo e($note->created_at->format('M d, Y')); ?></span>
+                                </div>
+                            <?php else: ?>
+                                <!-- Chỉ hiển thị ngày tạo cho normal note -->
+                                <div class="text-sm text-gray-500 mb-3">
+                                    <span><?php echo e($note->created_at->format('M d, Y')); ?></span>
+                                </div>
+                            <?php endif; ?>
                             
                             <div class="flex space-x-2">
-                                <a href="<?php echo e(route('notes.show', $note->id)); ?>" 
+                                <a href="<?php echo e($note->type === 'normal' ? route('normal-notes.show', $note->id) : route('notes.show', $note->id)); ?>" 
                                    class="flex-1 bg-gray-100 text-gray-700 text-center py-2 rounded hover:bg-gray-200 transition-colors text-sm">
                                     View
                                 </a>
-                                <?php if(!$note->is_completed): ?>
+                                <?php if(!$note->is_completed && $note->type !== 'normal'): ?>
                                     <a href="<?php echo e(route('pages.create', $note->id)); ?>" 
                                        class="flex-1 bg-blue-100 text-blue-700 text-center py-2 rounded hover:bg-blue-200 transition-colors text-sm">
                                         Add Page
                                     </a>
                                 <?php endif; ?>
-                                <a href="<?php echo e(route('study.show', $note->id)); ?>" 
-                                   class="flex-1 bg-green-100 text-green-700 text-center py-2 rounded hover:bg-green-200 transition-colors text-sm">
-                                    Study
-                                </a>
+                                <?php if($note->type !== 'normal'): ?>
+                                    <?php if($studyStatus === 'ready_for_review' || $studyStatus === 'new'): ?>
+                                        <a href="<?php echo e(route('study.show', $note->id)); ?>" 
+                                           class="flex-1 bg-green-100 text-green-700 text-center py-2 rounded hover:bg-green-200 transition-colors text-sm">
+                                            Study
+                                        </a>
+                                    <?php else: ?>
+                                        <span class="flex-1 bg-gray-100 text-gray-400 text-center py-2 rounded cursor-not-allowed text-sm"
+                                              title="Next review: <?php echo e(is_array($studyStatus) ? $studyStatus['next_review']->format('M d, Y') : 'Not available'); ?>">
+                                            Study
+                                        </span>
+                                    <?php endif; ?>
+                                <?php endif; ?>
                             </div>
                         </div>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>

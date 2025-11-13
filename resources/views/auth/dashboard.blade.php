@@ -35,6 +35,9 @@
             @if($notes->count() > 0)
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     @foreach($notes as $note)
+                        @php
+                            $studyStatus = $note->getStudyStatus();
+                        @endphp
                         <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center space-x-2">
@@ -57,7 +60,15 @@
                                         {{ ucfirst($note->type) }}
                                     </span>
                                 </div>
-                                @if($note->is_completed)
+                                
+                                @if($studyStatus === 'ready_for_review')
+                                    <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">Ready for Review</span>
+                                @elseif(is_array($studyStatus) && $studyStatus['status'] === 'scheduled')
+                                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full" 
+                                          title="Next review: {{ $studyStatus['next_review']->format('M d, Y') }}">
+                                        Review on {{ $studyStatus['next_review']->format('M d') }}
+                                    </span>
+                                @elseif($note->is_completed)
                                     <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Completed</span>
                                 @else
                                     <span class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">In Progress</span>
@@ -69,26 +80,43 @@
                                 <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $note->description }}</p>
                             @endif
                             
-                            <div class="flex items-center justify-between text-sm text-gray-500 mb-3">
-                                <span>{{ $note->pages->count() }}/{{ $note->page_limit }} pages</span>
-                                <span>{{ $note->created_at->format('M d, Y') }}</span>
-                            </div>
+                            <!-- Ẩn pages count cho normal note -->
+                            @if($note->type !== 'normal')
+                                <div class="flex items-center justify-between text-sm text-gray-500 mb-3">
+                                    <span>{{ $note->pages->count() }}/{{ $note->page_limit }} pages</span>
+                                    <span>{{ $note->created_at->format('M d, Y') }}</span>
+                                </div>
+                            @else
+                                <!-- Chỉ hiển thị ngày tạo cho normal note -->
+                                <div class="text-sm text-gray-500 mb-3">
+                                    <span>{{ $note->created_at->format('M d, Y') }}</span>
+                                </div>
+                            @endif
                             
                             <div class="flex space-x-2">
-                                <a href="{{ route('notes.show', $note->id) }}" 
+                                <a href="{{ $note->type === 'normal' ? route('normal-notes.show', $note->id) : route('notes.show', $note->id) }}" 
                                    class="flex-1 bg-gray-100 text-gray-700 text-center py-2 rounded hover:bg-gray-200 transition-colors text-sm">
                                     View
                                 </a>
-                                @if(!$note->is_completed)
+                                @if(!$note->is_completed && $note->type !== 'normal')
                                     <a href="{{ route('pages.create', $note->id) }}" 
                                        class="flex-1 bg-blue-100 text-blue-700 text-center py-2 rounded hover:bg-blue-200 transition-colors text-sm">
                                         Add Page
                                     </a>
                                 @endif
-                                <a href="{{ route('study.show', $note->id) }}" 
-                                   class="flex-1 bg-green-100 text-green-700 text-center py-2 rounded hover:bg-green-200 transition-colors text-sm">
-                                    Study
-                                </a>
+                                @if($note->type !== 'normal')
+                                    @if($studyStatus === 'ready_for_review' || $studyStatus === 'new')
+                                        <a href="{{ route('study.show', $note->id) }}" 
+                                           class="flex-1 bg-green-100 text-green-700 text-center py-2 rounded hover:bg-green-200 transition-colors text-sm">
+                                            Study
+                                        </a>
+                                    @else
+                                        <span class="flex-1 bg-gray-100 text-gray-400 text-center py-2 rounded cursor-not-allowed text-sm"
+                                              title="Next review: {{ is_array($studyStatus) ? $studyStatus['next_review']->format('M d, Y') : 'Not available' }}">
+                                            Study
+                                        </span>
+                                    @endif
+                                @endif
                             </div>
                         </div>
                     @endforeach

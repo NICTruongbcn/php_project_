@@ -27,7 +27,45 @@ class Note extends Model
         'updated_at' => 'datetime',
     ];
 
-    // Giá trị mặc định
+public function getStudyStatus()
+{
+    $dueItems = \App\Models\SessionQueueItem::whereHas('session', function($query) {
+            $query->where('note_id', $this->id)
+                  ->where('user_id', \App\Helpers\AuthHelper::id());
+        })
+        ->where(function($query) {
+            $query->where('status', 'pending')
+                  ->orWhere('status', 'again')
+                  ->orWhere(function($q) {
+                      $q->where('status', 'done')
+                        ->where('next_review_at', '<=', now());
+                  });
+        })
+        ->exists();
+
+    if ($dueItems) {
+        return 'ready_for_review';
+    }
+
+    $nextReview = \App\Models\SessionQueueItem::whereHas('session', function($query) {
+            $query->where('note_id', $this->id)
+                  ->where('user_id', \App\Helpers\AuthHelper::id());
+        })
+        ->where('status', 'done')
+        ->where('next_review_at', '>', now())
+        ->orderBy('next_review_at', 'asc')
+        ->first();
+
+    if ($nextReview) {
+        return [
+            'status' => 'scheduled',
+            'next_review' => $nextReview->next_review_at
+        ];
+    }
+
+    return 'new';
+}
+    
     protected $attributes = [
         'is_private' => true,
         'is_completed' => false,

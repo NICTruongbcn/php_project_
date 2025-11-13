@@ -6,7 +6,10 @@ use App\Models\Note;
 use Illuminate\Http\Request;
 use App\Helpers\AuthHelper;
 use Illuminate\Support\Facades\Log;
-
+/**
+ * @param Request $request
+ * @return \Illuminate\Http\RedirectResponse
+ */
 class NoteController extends Controller
 {
     public function create()
@@ -15,12 +18,13 @@ class NoteController extends Controller
     }
 
     public function store(Request $request)
-    {
+    {        $note = null;
+
         try {
             $request->validate([
                 'title' => 'required|string|max:255',
                 'type' => 'required|in:normal,vocab,formula',
-                'subject' => 'required_if:type,formula|string|max:255',
+                
                 'description' => 'nullable|string',
             ]);
 
@@ -39,8 +43,15 @@ class NoteController extends Controller
 
             Log::info('Note created successfully:', ['note_id' => $note->id]);
 
-            return redirect()->route('pages.create', $note->id)
+            if ($request->type === 'normal') {
+    return redirect()->route('normal-notes.show', $note->id)
+                ->with('success', 'Note created successfully!');
+}
+            else
+            {
+                return redirect()->route('pages.create', $note->id)
                             ->with('success', 'Note created successfully! Now add your first page.');
+            }
 
         } catch (\Exception $e) {
             Log::error('Error creating note:', [
@@ -50,7 +61,7 @@ class NoteController extends Controller
             
             return redirect()->back()
                            ->withInput()
-                           ->withErrors(['error' => 'Failed to create note. Please try again.']);
+                           ->withErrors(['error' =>$e->getMessage() ]);
         }
     }
 
@@ -73,22 +84,6 @@ class NoteController extends Controller
         return view('notes.edit', compact('note'));
     }
 
-    public function update(Request $request, Note $note)
-    {
-        if ($note->user_id !== AuthHelper::id()) {
-            abort(403);
-        }
-
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
-
-        $note->update($request->only(['title', 'description']));
-
-        return redirect()->route('notes.show', $note->id)
-                        ->with('success', 'Note updated successfully!');
-    }
 
     public function destroy(Note $note)
     {

@@ -253,7 +253,6 @@
 
 @section('scripts')
     <script>
-        // Smooth scroll script đã có trong layout
         console.log('Welcome page loaded');
     </script>
 @endsection

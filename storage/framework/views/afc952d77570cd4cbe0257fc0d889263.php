@@ -60,12 +60,6 @@
                         + Add Page
                     </a>
                 <?php endif; ?>
-                <?php if($pages->count() > 0): ?>
-                    <a href="<?php echo e(route('study.show', $note->id)); ?>" 
-                       class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold">
-                        Start Studying
-                    </a>
-                <?php endif; ?>
             </div>
         </div>
 
@@ -113,40 +107,6 @@
                                         #<?php echo e($page->position); ?>
 
                                     </span>
-                                    <?php if($page->meta && isset(json_decode($page->meta, true)['difficulty'])): ?>
-                                        <?php
-                                            $difficulty = json_decode($page->meta, true)['difficulty'];
-                                            $colorClasses = [
-                                                'easy' => 'bg-green-100 text-green-800',
-                                                'medium' => 'bg-yellow-100 text-yellow-800',
-                                                'hard' => 'bg-red-100 text-red-800'
-                                            ];
-                                        ?>
-                                        <span class="text-xs font-semibold px-2 py-1 rounded <?php echo e($colorClasses[$difficulty] ?? 'bg-gray-100 text-gray-800'); ?>">
-                                            <?php echo e(ucfirst($difficulty)); ?>
-
-                                        </span>
-                                    <?php endif; ?>
-
-                                    <!-- Hiển thị word type cho vocab notes -->
-                                    <?php if($note->type === 'vocab' && $page->meta && isset(json_decode($page->meta, true)['word_type'])): ?>
-                                        <?php
-                                            $wordType = json_decode($page->meta, true)['word_type'];
-                                            $wordTypeColors = [
-                                                'noun' => 'bg-blue-100 text-blue-800',
-                                                'verb' => 'bg-green-100 text-green-800', 
-                                                'adjective' => 'bg-yellow-100 text-yellow-800',
-                                                'adverb' => 'bg-purple-100 text-purple-800',
-                                                'phrase' => 'bg-indigo-100 text-indigo-800',
-                                                'idiom' => 'bg-pink-100 text-pink-800',
-                                                'general' => 'bg-gray-100 text-gray-800'
-                                            ];
-                                        ?>
-                                        <span class="text-xs font-semibold px-2 py-1 rounded <?php echo e($wordTypeColors[$wordType] ?? 'bg-gray-100 text-gray-800'); ?>">
-                                            <?php echo e(ucfirst($wordType)); ?>
-
-                                        </span>
-                                    <?php endif; ?>
                                 </div>
 
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -155,11 +115,13 @@
                                         <h4 class="font-semibold text-gray-700 mb-2 text-sm">
                                             <?php if($note->type === 'vocab'): ?> Term
                                             <?php elseif($note->type === 'formula'): ?> Formula
-                                            <?php else: ?> Front <?php endif; ?>
+                                            <?php else: ?> Title <?php endif; ?>
                                         </h4>
                                         <div class="text-gray-800">
                                             <?php if($page->front_text): ?>
                                                 <?php if($note->type === 'vocab'): ?>
+                                                    <div class="font-semibold text-lg text-gray-900 mb-2"><?php echo e($page->front_text); ?></div>
+                                                <?php elseif($note->type === 'normal'): ?>
                                                     <div class="font-semibold text-lg text-gray-900 mb-2"><?php echo e($page->front_text); ?></div>
                                                 <?php else: ?>
                                                     <p class="mb-2"><?php echo e($page->front_text); ?></p>
@@ -188,11 +150,18 @@
                                         <h4 class="font-semibold text-gray-700 mb-2 text-sm">
                                             <?php if($note->type === 'vocab'): ?> Definition
                                             <?php elseif($note->type === 'formula'): ?> Explanation
-                                            <?php else: ?> Back <?php endif; ?>
+                                            <?php else: ?> Content <?php endif; ?>
                                         </h4>
                                         <div class="text-gray-800">
                                             <?php if($page->back_text): ?>
-                                                <p class="mb-2"><?php echo e($page->back_text); ?></p>
+                                                <?php if($note->type === 'normal'): ?>
+                                                    <div class="prose max-w-none">
+                                                        <?php echo nl2br(e($page->back_text)); ?>
+
+                                                    </div>
+                                                <?php else: ?>
+                                                    <p class="mb-2"><?php echo e($page->back_text); ?></p>
+                                                <?php endif; ?>
                                             <?php endif; ?>
                                             <?php if($page->back_latex): ?>
                                                 <div class="bg-gray-100 p-3 rounded font-mono text-sm mb-2">
@@ -212,35 +181,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-                                <!-- Hiển thị example sentence cho vocab notes -->
-                                <?php if($note->type === 'vocab' && $page->meta && isset(json_decode($page->meta, true)['example_sentence'])): ?>
-                                    <?php
-                                        $exampleSentence = json_decode($page->meta, true)['example_sentence'];
-                                    ?>
-                                    <?php if($exampleSentence): ?>
-                                        <div class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                            <div class="font-semibold text-sm text-blue-800 mb-1">Example Sentence:</div>
-                                            <p class="text-blue-900 italic">"<?php echo e($exampleSentence); ?>"</p>
-                                        </div>
-                                    <?php endif; ?>
-                                <?php endif; ?>
-
-                                <?php if($page->meta && isset(json_decode($page->meta, true)['tags'])): ?>
-                                    <?php
-                                        $tags = json_decode($page->meta, true)['tags'];
-                                    ?>
-                                    <?php if(!empty($tags)): ?>
-                                        <div class="mt-3 flex flex-wrap gap-1">
-                                            <?php $__currentLoopData = $tags; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $tag): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                                <span class="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded">
-                                                    <?php echo e($tag); ?>
-
-                                                </span>
-                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                                        </div>
-                                    <?php endif; ?>
-                                <?php endif; ?>
                             </div>
 
                             <div class="flex space-x-2 ml-4">
@@ -276,47 +216,6 @@
         <?php endif; ?>
     </div>
 
-    <!-- Quick Stats -->
-    <?php if($pages->count() > 0): ?>
-    <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center">
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-layer-group text-blue-600"></i>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600">Total Pages</p>
-                    <p class="text-2xl font-bold text-gray-800"><?php echo e($pages->count()); ?></p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center">
-                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-check-circle text-green-600"></i>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600">Completion</p>
-                    <p class="text-2xl font-bold text-gray-800"><?php echo e(min(round(($pages->count() / $note->page_limit) * 100), 100)); ?>%</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center">
-                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-clock text-purple-600"></i>
-                </div>
-                <div>
-                    <p class="text-sm text-gray-600">Created</p>
-                    <p class="text-2xl font-bold text-gray-800"><?php echo e($note->created_at->format('M d')); ?></p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
-
     <!-- Action Buttons -->
     <div class="flex justify-between items-center mt-6">
         <a href="<?php echo e(route('dashboard')); ?>" 
@@ -324,18 +223,7 @@
             ← Back to Dashboard
         </a>
         
-        <div class="flex space-x-3">
-            <a href="<?php echo e(route('notes.edit', $note->id)); ?>" 
-               class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
-                Edit Note
-            </a>
-            <?php if($pages->count() > 0): ?>
-                <a href="<?php echo e(route('study.show', $note->id)); ?>" 
-                   class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold">
-                    Start Studying
-                </a>
-            <?php endif; ?>
-        </div>
+       
     </div>
 </div>
 

@@ -56,38 +56,38 @@
             @csrf
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Front Side -->
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-800">Front Side</h3>
-                        <span class="text-sm text-gray-500">
-                            @if($note->type === 'vocab') Term 
-                            @elseif($note->type === 'formula') Formula 
-                            @else Question/Content @endif
-                        </span>
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            @if($note->type === 'normal') Title
+                            @elseif($note->type === 'vocab') Term
+                            @else Formula @endif
+                        </h3>
                     </div>
                     
-                    <!-- Text Content -->
                     <div>
                         <label for="front_text" class="block text-sm font-medium text-gray-700 mb-2">
-                            @if($note->type === 'vocab') Term *
-                            @elseif($note->type === 'formula') Formula Description
-                            @else Content * @endif
+                            @if($note->type === 'normal') Title *
+                            @elseif($note->type === 'vocab') Term *
+                            @else Formula Description @endif
                         </label>
-                        @if($note->type === 'vocab')
+                        @if($note->type === 'normal')
+                        <input type="text" name="front_text" id="front_text" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                               placeholder="Enter the title"
+                               value="{{ old('front_text') }}">
+                        @elseif($note->type === 'vocab')
                         <input type="text" name="front_text" id="front_text" required
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                placeholder="Enter the term or word"
                                value="{{ old('front_text') }}">
                         @else
-                        <textarea name="front_text" id="front_text" rows="4"
+                        <textarea name="front_text" id="front_text" rows="4" required
                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                  placeholder="@if($note->type === 'formula') Describe the formula @else Enter the question or front content @endif"
-                                  @if($note->type !== 'formula') required @endif>{{ old('front_text') }}</textarea>
+                                  placeholder="Describe the formula">{{ old('front_text') }}</textarea>
                         @endif
                     </div>
 
-                    <!-- LaTeX Formula (Only for formula notes) -->
                     @if($note->type === 'formula')
                     <div>
                         <label for="front_latex" class="block text-sm font-medium text-gray-700 mb-2">
@@ -100,33 +100,13 @@
                     </div>
                     @endif
 
-                    <!-- Word Type (Only for vocab notes) -->
-                    @if($note->type === 'vocab')
-                    <div>
-                        <label for="word_type" class="block text-sm font-medium text-gray-700 mb-2">
-                            Word Type (Optional)
-                        </label>
-                        <select name="word_type" id="word_type"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                            <option value="general">General</option>
-                            <option value="noun">Noun</option>
-                            <option value="verb">Verb</option>
-                            <option value="adjective">Adjective</option>
-                            <option value="adverb">Adverb</option>
-                            <option value="phrase">Phrase</option>
-                            <option value="idiom">Idiom</option>
-                        </select>
-                    </div>
-                    @endif
-
-                    <!-- Image Upload -->
                     <div>
                         <label for="front_image" class="block text-sm font-medium text-gray-700 mb-2">
                             @if($note->type === 'formula') Formula Image
-                            @else Front Image @endif (Optional)
+                            @elseif($note->type === 'vocab') Term Image
+                            @else Title Image @endif (Optional)
                         </label>
                         
-                        <!-- Custom File Input -->
                         <div class="custom-file-input">
                             <input type="file" name="front_image" id="front_image" 
                                    accept="image/*"
@@ -141,31 +121,26 @@
                     </div>
                 </div>
 
-                <!-- Back Side -->
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-lg font-semibold text-gray-800">Back Side</h3>
-                        <span class="text-sm text-gray-500">
-                            @if($note->type === 'vocab') Definition
-                            @elseif($note->type === 'formula') Explanation
-                            @else Answer/Content @endif
-                        </span>
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            @if($note->type === 'normal') Content
+                            @elseif($note->type === 'vocab') Definition
+                            @else Explanation @endif
+                        </h3>
                     </div>
                     
-                    <!-- Text Content -->
                     <div>
                         <label for="back_text" class="block text-sm font-medium text-gray-700 mb-2">
-                            @if($note->type === 'vocab') Definition *
-                            @elseif($note->type === 'formula') Formula Explanation
-                            @else Content * @endif
+                            @if($note->type === 'normal') Content *
+                            @elseif($note->type === 'vocab') Definition *
+                            @else Formula Explanation @endif
                         </label>
-                        <textarea name="back_text" id="back_text" rows="4"
+                        <textarea name="back_text" id="back_text" rows="4" required
                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                  placeholder="@if($note->type === 'vocab') Enter the definition @elseif($note->type === 'formula') Explain the formula @else Enter the answer or back content @endif"
-                                  @if($note->type !== 'formula') required @endif>{{ old('back_text') }}</textarea>
+                                  placeholder="@if($note->type === 'vocab') Enter the definition @elseif($note->type === 'formula') Explain the formula @else Enter your content here... @endif">{{ old('back_text') }}</textarea>
                     </div>
 
-                    <!-- LaTeX Formula (Only for formula notes) -->
                     @if($note->type === 'formula')
                     <div>
                         <label for="back_latex" class="block text-sm font-medium text-gray-700 mb-2">
@@ -178,26 +153,13 @@
                     </div>
                     @endif
 
-                    <!-- Example Sentence (Only for vocab notes) -->
-                    @if($note->type === 'vocab')
-                    <div>
-                        <label for="example_sentence" class="block text-sm font-medium text-gray-700 mb-2">
-                            Example Sentence (Optional)
-                        </label>
-                        <textarea name="example_sentence" id="example_sentence" rows="2"
-                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                  placeholder="Enter an example sentence">{{ old('example_sentence') }}</textarea>
-                    </div>
-                    @endif
-
-                    <!-- Image Upload -->
                     <div>
                         <label for="back_image" class="block text-sm font-medium text-gray-700 mb-2">
                             @if($note->type === 'formula') Explanation Image
-                            @else Back Image @endif (Optional)
+                            @elseif($note->type === 'vocab') Definition Image
+                            @else Content Image @endif (Optional)
                         </label>
                         
-                        <!-- Custom File Input -->
                         <div class="custom-file-input">
                             <input type="file" name="back_image" id="back_image" 
                                    accept="image/*"
@@ -209,40 +171,6 @@
                         </div>
                         <p class="text-xs text-gray-500 mt-1">Upload an image (max: 2MB)</p>
                         <div id="back-file-name" class="text-sm text-green-600 mt-1 hidden"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Additional Options -->
-            <div class="border-t border-gray-200 pt-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Additional Options</h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="difficulty" class="block text-sm font-medium text-gray-700 mb-2">
-                            Difficulty Level *
-                        </label>
-                        <select name="difficulty" id="difficulty" required
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                            <option value="easy">Easy</option>
-                            <option value="medium" selected>Medium</option>
-                            <option value="hard">Hard</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label for="tags" class="block text-sm font-medium text-gray-700 mb-2">
-                            Tags (Optional)
-                        </label>
-                        <input type="text" name="tags" id="tags"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                               placeholder="Enter tags separated by commas"
-                               value="{{ old('tags') }}">
-                        <p class="text-xs text-gray-500 mt-1">
-                            @if($note->type === 'vocab') e.g., vocabulary, english, important
-                            @elseif($note->type === 'formula') e.g., math, physics, equation
-                            @else e.g., important, summary, key-points @endif
-                        </p>
                     </div>
                 </div>
             </div>
@@ -269,12 +197,15 @@
         </form>
     </div>
 
-    <!-- Preview Section -->
     <div class="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h3 class="text-xl font-semibold text-gray-800 mb-4">Preview</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[200px]">
-                <h4 class="font-semibold text-gray-700 mb-3">Front Preview</h4>
+                <h4 class="font-semibold text-gray-700 mb-3">
+                    @if($note->type === 'normal') Title
+                    @elseif($note->type === 'vocab') Term
+                    @else Formula @endif
+                </h4>
                 <div id="front-preview" class="text-gray-600">
                     Content will appear here...
                 </div>
@@ -282,7 +213,11 @@
             </div>
 
             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[200px]">
-                <h4 class="font-semibold text-gray-700 mb-3">Back Preview</h4>
+                <h4 class="font-semibold text-gray-700 mb-3">
+                    @if($note->type === 'normal') Content
+                    @elseif($note->type === 'vocab') Definition
+                    @else Explanation @endif
+                </h4>
                 <div id="back-preview" class="text-gray-600">
                     Content will appear here...
                 </div>
@@ -336,8 +271,8 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const frontText = document.getElementById('front_text');
-    const backText = document.getElementById('back_text');
+    const frontTextEl = document.getElementById('front_text');
+    const backTextEl = document.getElementById('back_text');
     const frontLatex = document.getElementById('front_latex');
     const backLatex = document.getElementById('back_latex');
     const frontImage = document.getElementById('front_image');
@@ -350,57 +285,52 @@ document.addEventListener('DOMContentLoaded', function() {
     const backFileName = document.getElementById('back-file-name');
 
     function updatePreview() {
-        // Front preview
+        const frontValue = frontTextEl ? frontTextEl.value : '';
         let frontContent = '';
-        if (frontText) {
-            if (frontText.tagName === 'TEXTAREA') {
-                frontContent = frontText.value;
-            } else {
-                frontContent = `<div class="font-semibold text-lg">${frontText.value}</div>`;
-            }
-        }
         
-        if (frontLatex && frontLatex.value) {
-            frontContent += (frontContent ? '<br><br>' : '') + 
-                           '<div class="bg-gray-100 p-3 rounded font-mono text-sm">' + 
-                           'LaTeX: ' + frontLatex.value + 
-                           '</div>';
+        if (frontTextEl) {
+            if ('{{ $note->type }}' === 'normal') {
+                frontContent = `<div class="font-bold text-xl">${escapeHtml(frontValue) || 'Title will appear here...'}</div>`;
+            } else {
+                frontContent = escapeHtml(frontValue) || 'Content will appear here...';
+                frontContent = `<div>${nl2br(frontContent)}</div>`;
+            }
+        } else {
+            frontContent = 'Content will appear here...';
         }
-        frontPreview.innerHTML = frontContent || 'Content will appear here...';
 
-        // Back preview
-        let backContent = backText ? backText.value : '';
-        if (backLatex && backLatex.value) {
-            backContent += (backContent ? '<br><br>' : '') + 
-                          '<div class="bg-gray-100 p-3 rounded font-mono text-sm">' + 
-                          'LaTeX: ' + backLatex.value + 
-                          '</div>';
+        if (frontLatex && frontLatex.value) {
+            frontContent += '<br><br><div class="bg-gray-100 p-3 rounded font-mono text-sm">' + 'LaTeX: ' + escapeHtml(frontLatex.value) + '</div>';
         }
-        backPreview.innerHTML = backContent || 'Content will appear here...';
+        frontPreview.innerHTML = frontContent;
+
+        const backValue = backTextEl ? backTextEl.value : '';
+        let backContent = escapeHtml(backValue) || 'Content will appear here...';
+        backContent = `<div>${nl2br(backContent)}</div>`;
+        if (backLatex && backLatex.value) {
+            backContent += '<br><br><div class="bg-gray-100 p-3 rounded font-mono text-sm">' + 'LaTeX: ' + escapeHtml(backLatex.value) + '</div>';
+        }
+        backPreview.innerHTML = backContent;
     }
 
     function handleImagePreview(input, previewElement, fileNameElement) {
-        if (input.files && input.files[0]) {
+        if (input && input.files && input.files[0]) {
             const file = input.files[0];
             const reader = new FileReader();
-            
-            // Update file name display
             fileNameElement.textContent = `Selected: ${file.name}`;
             fileNameElement.classList.remove('hidden');
-            
-            // Update preview image
             reader.onload = function(e) {
                 previewElement.innerHTML = '<img src="' + e.target.result + '" class="max-w-full h-auto rounded-lg border border-gray-300" alt="Preview">';
             }
             reader.readAsDataURL(file);
         } else {
-            fileNameElement.classList.add('hidden');
-            previewElement.innerHTML = '';
+            if (fileNameElement) fileNameElement.classList.add('hidden');
+            if (previewElement) previewElement.innerHTML = '';
         }
     }
 
     function handleFileInputChange(input, fileNameElement) {
-        if (input.files && input.files[0]) {
+        if (input && input.files && input.files[0]) {
             const file = input.files[0];
             fileNameElement.textContent = `Selected: ${file.name}`;
             fileNameElement.classList.remove('hidden');
@@ -409,13 +339,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Add event listeners for text inputs
-    if (frontText) frontText.addEventListener('input', updatePreview);
-    if (backText) backText.addEventListener('input', updatePreview);
+    function nl2br(str) {
+        return (str + '').replace(/(\r\n|\n\r|\r|\n)/g, '<br>');
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text.replace(/&/g, "&amp;")
+                   .replace(/</g, "&lt;")
+                   .replace(/>/g, "&gt;")
+                   .replace(/"/g, "&quot;")
+                   .replace(/'/g, "&#039;");
+    }
+
+    if (frontTextEl) frontTextEl.addEventListener('input', updatePreview);
+    if (backTextEl) backTextEl.addEventListener('input', updatePreview);
     if (frontLatex) frontLatex.addEventListener('input', updatePreview);
     if (backLatex) backLatex.addEventListener('input', updatePreview);
 
-    // Add event listeners for file inputs
     if (frontImage) {
         frontImage.addEventListener('change', function() {
             handleFileInputChange(this, frontFileName);
