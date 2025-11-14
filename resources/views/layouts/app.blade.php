@@ -17,6 +17,16 @@
         .feature-icon {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .break-overlay {
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -37,9 +47,13 @@
                 </div>
 
                 <div class="flex items-center space-x-4">
-                    @auth
+                    @if(session('user'))
                         <a href="{{ route('dashboard') }}" class="text-gray-600 hover:text-blue-600 font-medium">Dashboard</a>
-                        <span class="text-gray-600">Welcome, {{ Auth::user()->name }}</span>
+                        
+                        <span class="text-gray-600">Welcome, {{ session('user')['name'] }}</span>
+                        @if(session('user')['is_vip'] ?? false)
+                            <span class="bg-yellow-100 text-yellow-800 text-xs font-semibold px-2 py-1 rounded-full">VIP</span>
+                        @endif
                         <form method="POST" action="{{ route('logout') }}" class="inline">
                             @csrf
                             <button type="submit" class="text-red-600 hover:text-red-800 font-medium">Logout</button>
@@ -49,7 +63,7 @@
                         <a href="{{ route('register') }}" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 font-medium">
                             Get Started
                         </a>
-                    @endauth
+                    @endif
                 </div>
             </div>
         </div>
@@ -58,6 +72,18 @@
     <main>
         @yield('content')
     </main>
+
+    <div id="breakOverlay" class="break-overlay fixed inset-0 hidden items-center justify-center text-white">
+        <div class="text-center">
+            <div class="text-6xl mb-4">
+                <i class="fas fa-coffee"></i>
+            </div>
+            <h2 class="text-4xl font-bold mb-2">Break Time</h2>
+            <p class="text-2xl mb-4">Take a rest, you deserve it!</p>
+            <div id="breakTimer" class="text-5xl font-mono font-bold mb-6">05:00</div>
+            <p class="text-lg opacity-75">Session will resume automatically</p>
+        </div>
+    </div>
 
     <footer class="bg-gray-800 text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -121,6 +147,48 @@
                 }
             });
         });
+
+        function startBreakTimer(minutes) {
+            const overlay = document.getElementById('breakOverlay');
+            const timer = document.getElementById('breakTimer');
+            let timeLeft = minutes * 60;
+
+            overlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            const countdown = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdown);
+                    overlay.classList.add('hidden');
+                    document.body.style.overflow = 'auto';
+                    if (typeof onBreakEnd === 'function') {
+                        onBreakEnd();
+                    }
+                }
+                timeLeft--;
+            }, 1000);
+        }
+
+        function flipCard(card) {
+            card.classList.toggle('flipped');
+        }
+
+        function rateQuality(quality) {
+            document.querySelectorAll('.quality-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+
+            const selectedBtn = document.querySelector(`[data-quality="${quality}"]`);
+            selectedBtn.classList.remove('bg-gray-200', 'text-gray-700');
+            selectedBtn.classList.add('bg-blue-600', 'text-white');
+
+            document.getElementById('quality').value = quality;
+        }
     </script>
 
     @yield('scripts')

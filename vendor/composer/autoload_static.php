@@ -41,6 +41,7 @@ class ComposerStaticInitd8f67b824a1bf31c8999ead558d9b485
         'ce9671a430e4846b44e1c68c7611f9f5' => __DIR__ . '/..' . '/mockery/mockery/library/Mockery.php',
         'a1cfe24d14977df6878b9bf804af2d1c' => __DIR__ . '/..' . '/nunomaduro/collision/src/Adapters/Phpunit/Autoload.php',
         'ec07570ca5a812141189b1fa81503674' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
+        'c75eea9f67f67b59e61d46dea2d287fa' => __DIR__ . '/../..' . '/app/Helpers/AuthHelper.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -507,12 +508,14 @@ class ComposerStaticInitd8f67b824a1bf31c8999ead558d9b485
         'Database\\Seeders\\' => 
         array (
             0 => __DIR__ . '/../..' . '/database/seeders',
-            1 => __DIR__ . '/..' . '/laravel/pint/database/seeders',
+            1 => __DIR__ . '/../..' . '/database/seeders',
+            2 => __DIR__ . '/..' . '/laravel/pint/database/seeders',
         ),
         'Database\\Factories\\' => 
         array (
             0 => __DIR__ . '/../..' . '/database/factories',
-            1 => __DIR__ . '/..' . '/laravel/pint/database/factories',
+            1 => __DIR__ . '/../..' . '/database/factories',
+            2 => __DIR__ . '/..' . '/laravel/pint/database/factories',
         ),
         'Cron\\' => 
         array (
@@ -533,13 +536,32 @@ class ComposerStaticInitd8f67b824a1bf31c8999ead558d9b485
         'App\\' => 
         array (
             0 => __DIR__ . '/../..' . '/app',
-            1 => __DIR__ . '/..' . '/laravel/pint/app',
+            1 => __DIR__ . '/../..' . '/app',
+            2 => __DIR__ . '/..' . '/laravel/pint/app',
         ),
     );
 
     public static $classMap = array (
+        'App\\Helpers\\AuthHelper' => __DIR__ . '/../..' . '/app/Helpers/AuthHelper.php',
+        'App\\Http\\Controllers\\AdminController' => __DIR__ . '/../..' . '/app/Http/Controllers/AdminController.php',
+        'App\\Http\\Controllers\\AuthController' => __DIR__ . '/../..' . '/app/Http/Controllers/AuthController.php',
         'App\\Http\\Controllers\\Controller' => __DIR__ . '/../..' . '/app/Http/Controllers/Controller.php',
+        'App\\Http\\Controllers\\DashboardController' => __DIR__ . '/../..' . '/app/Http/Controllers/DashboardController.php',
+        'App\\Http\\Controllers\\NoteController' => __DIR__ . '/../..' . '/app/Http/Controllers/NoteController.php',
+        'App\\Http\\Controllers\\PageController' => __DIR__ . '/../..' . '/app/Http/Controllers/PageController.php',
+        'App\\Http\\Controllers\\StudyController' => __DIR__ . '/../..' . '/app/Http/Controllers/StudyController.php',
+        'App\\Http\\Middleware\\AdminMiddleware' => __DIR__ . '/../..' . '/app/Http/Middleware/AdminMiddleware.php',
+        'App\\Http\\Middleware\\AuthMiddleware' => __DIR__ . '/../..' . '/app/Http/Middleware/AuthMiddleware.php',
+        'App\\Models\\Attachment' => __DIR__ . '/../..' . '/app/Models/Attachment.php',
+        'App\\Models\\FormulaCatalog' => __DIR__ . '/../..' . '/app/Models/FormulaCatalog.php',
+        'App\\Models\\Note' => __DIR__ . '/../..' . '/app/Models/Note.php',
+        'App\\Models\\Page' => __DIR__ . '/../..' . '/app/Models/Page.php',
+        'App\\Models\\Purchase' => __DIR__ . '/../..' . '/app/Models/Purchase.php',
+        'App\\Models\\Review' => __DIR__ . '/../..' . '/app/Models/Review.php',
+        'App\\Models\\SessionQueueItem' => __DIR__ . '/../..' . '/app/Models/SessionQueueItem.php',
+        'App\\Models\\StudySession' => __DIR__ . '/../..' . '/app/Models/StudySession.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
+        'App\\Models\\VipPlan' => __DIR__ . '/../..' . '/app/Models/VipPlan.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
         'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
         'Brick\\Math\\BigDecimal' => __DIR__ . '/..' . '/brick/math/src/BigDecimal.php',

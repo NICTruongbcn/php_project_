@@ -12,18 +12,65 @@ class Note extends Model
     protected $fillable = [
         'user_id',
         'title',
+        'type',
+        'subject', 
         'description',
-        'type', // normal | vocab | formula
-        'subject',
         'is_private',
         'is_completed',
-        'page_limit',
+        'page_limit','study_method',
+    'next_review_at',
     ];
 
     protected $casts = [
         'is_private' => 'boolean',
         'is_completed' => 'boolean',
-        'page_limit' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'next_review_at' => 'datetime',
+    ];
+
+public function getStudyStatus()
+{
+    $dueItems = \App\Models\SessionQueueItem::whereHas('session', function($query) {
+            $query->where('note_id', $this->id)
+                  ->where('user_id', \App\Helpers\AuthHelper::id());
+        })
+        ->where(function($query) {
+            $query->where('status', 'pending')
+                  ->orWhere('status', 'again')
+                  ->orWhere(function($q) {
+                      $q->where('status', 'done')
+                        ->where('next_review_at', '<=', now());
+                  });
+        })
+        ->exists();
+
+    if ($dueItems) {
+        return 'ready_for_review';
+    }
+
+    $nextReview = \App\Models\SessionQueueItem::whereHas('session', function($query) {
+            $query->where('note_id', $this->id)
+                  ->where('user_id', \App\Helpers\AuthHelper::id());
+        })
+        ->where('status', 'done')
+        ->where('next_review_at', '>', now())
+        ->orderBy('next_review_at', 'asc')
+        ->first();
+
+    if ($nextReview) {
+        return [
+            'status' => 'scheduled',
+            'next_review' => $nextReview->next_review_at
+        ];
+    }
+
+    return 'new';
+}
+    
+    protected $attributes = [
+        'is_private' => true,
+        'is_completed' => false,
     ];
 
     public function user()
@@ -33,7 +80,7 @@ class Note extends Model
 
     public function pages()
     {
-        return $this->hasMany(Page::class);
+        return $this->hasMany(Page::class)->orderBy('position');
     }
 
     public function studySessions()

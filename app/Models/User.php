@@ -34,7 +34,6 @@ class User extends Authenticatable implements MustVerifyEmail
             'vip_expires_at' => 'datetime',
         ];
     }
-    /* Relationships */
     public function notes()
     {
         return $this->hasMany(Note::class);
