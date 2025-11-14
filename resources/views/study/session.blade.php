@@ -170,7 +170,6 @@ function updateLiveTimer() {
     const now = Date.now();
     let elapsedMs = now - sessionStartTime;
     
-    // Đảm bảo không âm
     if (elapsedMs < 0) {
         elapsedMs = 0;
         sessionStartTime = now;
@@ -198,21 +197,7 @@ function showAnswer() {
 function rateAnswer(rating) {
     const responseTime = Math.floor((Date.now() - startTime) / 1000); 
     
-    document.querySelectorAll('.rating-btn').forEach(btn => {
-        const btnRating = parseInt(btn.dataset.rating);
-        btn.classList.remove('bg-blue-100', 'border-blue-500',
-                           'bg-green-100', 'border-green-500',
-                           'bg-red-100', 'border-red-500',
-                           'bg-purple-100', 'border-purple-500');
-        
-        if (btnRating === rating) {
-            const colorClass = '{{ $methodConfig["color"] }}';
-            btn.classList.add('bg-' + colorClass + '-100', 'border-' + colorClass + '-500');
-        }
-    });
-
     clearInterval(timerInterval);
-
     fetch('{{ route("study.review", $session) }}', {
         method: 'POST',
         headers: {
@@ -249,40 +234,29 @@ function rateAnswer(rating) {
     });
 }
 
-document.addEventListener('keydown', function(event) {
-    if (event.code === 'Space' && !answerShown) {
-        event.preventDefault();
-        showAnswer();
-    } else if (answerShown && event.code >= 'Digit0' && event.code <= 'Digit5') {
-        const rating = parseInt(event.code.replace('Digit', ''));
-        rateAnswer(rating);
-    }
-});
+// let startX = 0;
+// let endX = 0;
 
-let startX = 0;
-let endX = 0;
+// document.addEventListener('touchstart', function(event) {
+//     startX = event.changedTouches[0].screenX;
+// });
 
-document.addEventListener('touchstart', function(event) {
-    startX = event.changedTouches[0].screenX;
-});
+// document.addEventListener('touchend', function(event) {
+//     endX = event.changedTouches[0].screenX;
+//     handleSwipe();
+// });
 
-document.addEventListener('touchend', function(event) {
-    endX = event.changedTouches[0].screenX;
-    handleSwipe();
-});
-
-function handleSwipe() {
-    const diff = endX - startX;
+// function handleSwipe() {
+//     const diff = endX - startX;
     
-    if (Math.abs(diff) > 50) {
-        if (diff > 0 && !answerShown) {
-            showAnswer();
-        } else if (diff < 0 && answerShown) {
-            rateAnswer(4); 
-        }
-    }
-}
-
+//     if (Math.abs(diff) > 50) {
+//         if (diff > 0 && !answerShown) {
+//             showAnswer();
+//         } else if (diff < 0 && answerShown) {
+//             rateAnswer(4); 
+//         }
+//     }
+// }
 window.addEventListener('beforeunload', function() {
     clearInterval(timerInterval);
 });

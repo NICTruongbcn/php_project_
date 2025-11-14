@@ -12,12 +12,10 @@
                     <p class="text-gray-600">Add content to your note: "{{ $note->title }}"</p>
                     <div class="mt-2">
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
-                            @if($note->type === 'normal') bg-blue-100 text-blue-800
-                            @elseif($note->type === 'vocab') bg-green-100 text-green-800
+                            @if($note->type === 'vocab') bg-green-100 text-green-800
                             @else bg-purple-100 text-purple-800 @endif">
                             <i class="fas 
-                                @if($note->type === 'normal') fa-sticky-note
-                                @elseif($note->type === 'vocab') fa-book
+                                @if($note->type === 'vocab') fa-book
                                 @else fa-square-root-alt @endif mr-2"></i>
                             {{ ucfirst($note->type) }} Note
                         </span>
@@ -59,32 +57,26 @@
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-gray-800">
-                            @if($note->type === 'normal') Title
-                            @elseif($note->type === 'vocab') Term
+                            @if($note->type === 'vocab') Term
                             @else Formula @endif
                         </h3>
                     </div>
                     
                     <div>
                         <label for="front_text" class="block text-sm font-medium text-gray-700 mb-2">
-                            @if($note->type === 'normal') Title *
-                            @elseif($note->type === 'vocab') Term *
+                            @if($note->type === 'vocab') Term *
                             @else Formula Description @endif
                         </label>
-                        @if($note->type === 'normal')
-                        <input type="text" name="front_text" id="front_text" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                               placeholder="Enter the title"
-                               value="{{ old('front_text') }}">
-                        @elseif($note->type === 'vocab')
+
+                        @if($note->type === 'vocab')
                         <input type="text" name="front_text" id="front_text" required
                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                                placeholder="Enter the term or word"
                                value="{{ old('front_text') }}">
                         @else
-                        <textarea name="front_text" id="front_text" rows="4" required
+                        <textarea name="front_text" id="front_text" rows="4"
                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                  placeholder="Describe the formula">{{ old('front_text') }}</textarea>
+                                  placeholder="Describe the formula (optional)">{{ old('front_text') }}</textarea>
                         @endif
                     </div>
 
@@ -103,8 +95,7 @@
                     <div>
                         <label for="front_image" class="block text-sm font-medium text-gray-700 mb-2">
                             @if($note->type === 'formula') Formula Image
-                            @elseif($note->type === 'vocab') Term Image
-                            @else Title Image @endif (Optional)
+                            @else Term Image @endif (Optional)
                         </label>
                         
                         <div class="custom-file-input">
@@ -124,21 +115,19 @@
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-semibold text-gray-800">
-                            @if($note->type === 'normal') Content
-                            @elseif($note->type === 'vocab') Definition
+                            @if($note->type === 'vocab') Definition
                             @else Explanation @endif
                         </h3>
                     </div>
                     
                     <div>
                         <label for="back_text" class="block text-sm font-medium text-gray-700 mb-2">
-                            @if($note->type === 'normal') Content *
-                            @elseif($note->type === 'vocab') Definition *
+                            @if($note->type === 'vocab') Definition *
                             @else Formula Explanation @endif
                         </label>
-                        <textarea name="back_text" id="back_text" rows="4" required
+                        <textarea name="back_text" id="back_text" rows="4" @if($note->type === 'vocab') required @endif
                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                  placeholder="@if($note->type === 'vocab') Enter the definition @elseif($note->type === 'formula') Explain the formula @else Enter your content here... @endif">{{ old('back_text') }}</textarea>
+                                  placeholder="@if($note->type === 'vocab') Enter the definition @else Explain the formula (optional) @endif">{{ old('back_text') }}</textarea>
                     </div>
 
                     @if($note->type === 'formula')
@@ -156,8 +145,7 @@
                     <div>
                         <label for="back_image" class="block text-sm font-medium text-gray-700 mb-2">
                             @if($note->type === 'formula') Explanation Image
-                            @elseif($note->type === 'vocab') Definition Image
-                            @else Content Image @endif (Optional)
+                            @else Definition Image @endif (Optional)
                         </label>
                         
                         <div class="custom-file-input">
@@ -202,8 +190,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[200px]">
                 <h4 class="font-semibold text-gray-700 mb-3">
-                    @if($note->type === 'normal') Title
-                    @elseif($note->type === 'vocab') Term
+                    @if($note->type === 'vocab') Term
                     @else Formula @endif
                 </h4>
                 <div id="front-preview" class="text-gray-600">
@@ -214,8 +201,7 @@
 
             <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 min-h-[200px]">
                 <h4 class="font-semibold text-gray-700 mb-3">
-                    @if($note->type === 'normal') Content
-                    @elseif($note->type === 'vocab') Definition
+                    @if($note->type === 'vocab') Definition
                     @else Explanation @endif
                 </h4>
                 <div id="back-preview" class="text-gray-600">
@@ -267,6 +253,29 @@
     font-size: 14px;
     color: #059669;
 }
+#front-preview, #back-preview,
+#front_text, #back_text,
+#front_latex, #back_latex {
+    max-width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+#front-preview, #back-preview {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 8px;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    background-color: #f9fafb;
+}
 </style>
 
 <script>
@@ -283,36 +292,35 @@ document.addEventListener('DOMContentLoaded', function() {
     const backImagePreview = document.getElementById('back-image-preview');
     const frontFileName = document.getElementById('front-file-name');
     const backFileName = document.getElementById('back-file-name');
-
-    function updatePreview() {
-        const frontValue = frontTextEl ? frontTextEl.value : '';
-        let frontContent = '';
-        
-        if (frontTextEl) {
-            if ('{{ $note->type }}' === 'normal') {
-                frontContent = `<div class="font-bold text-xl">${escapeHtml(frontValue) || 'Title will appear here...'}</div>`;
-            } else {
-                frontContent = escapeHtml(frontValue) || 'Content will appear here...';
-                frontContent = `<div>${nl2br(frontContent)}</div>`;
-            }
+function updatePreview() {
+    const frontValue = frontTextEl ? frontTextEl.value : '';
+    let frontContent = '';
+    if (frontTextEl) {
+        if ('{{ $note->type }}' === 'vocab') {
+            frontContent = `<div class="font-bold text-xl break-words">${frontValue || 'Title will appear here...'}</div>`;
         } else {
-            frontContent = 'Content will appear here...';
+            frontContent = frontValue || 'Content will appear here...';
+            frontContent = `<div class="break-words whitespace-pre-wrap">${frontContent}</div>`;
         }
-
-        if (frontLatex && frontLatex.value) {
-            frontContent += '<br><br><div class="bg-gray-100 p-3 rounded font-mono text-sm">' + 'LaTeX: ' + escapeHtml(frontLatex.value) + '</div>';
-        }
-        frontPreview.innerHTML = frontContent;
-
-        const backValue = backTextEl ? backTextEl.value : '';
-        let backContent = escapeHtml(backValue) || 'Content will appear here...';
-        backContent = `<div>${nl2br(backContent)}</div>`;
-        if (backLatex && backLatex.value) {
-            backContent += '<br><br><div class="bg-gray-100 p-3 rounded font-mono text-sm">' + 'LaTeX: ' + escapeHtml(backLatex.value) + '</div>';
-        }
-        backPreview.innerHTML = backContent;
+    } else {
+        frontContent = 'Content will appear here...';
     }
+    if (frontLatex && frontLatex.value) {
+        frontContent += '<br><br><div class="bg-gray-100 p-3 rounded font-mono text-sm break-words whitespace-pre-wrap">' + 
+                       'LaTeX: ' + frontLatex.value + '</div>';
+    }
+    frontPreview.innerHTML = frontContent;
 
+    const backValue = backTextEl ? backTextEl.value : '';
+    let backContent = backValue || 'Content will appear here...';
+    backContent = `<div class="break-words whitespace-pre-wrap">${backContent}</div>`;
+    
+    if (backLatex && backLatex.value) {
+        backContent += '<br><br><div class="bg-gray-100 p-3 rounded font-mono text-sm break-words whitespace-pre-wrap">' + 
+                      'LaTeX: ' + backLatex.value + '</div>';
+    }
+    backPreview.innerHTML = backContent;
+}
     function handleImagePreview(input, previewElement, fileNameElement) {
         if (input && input.files && input.files[0]) {
             const file = input.files[0];
@@ -338,20 +346,6 @@ document.addEventListener('DOMContentLoaded', function() {
             fileNameElement.classList.add('hidden');
         }
     }
-
-    function nl2br(str) {
-        return (str + '').replace(/(\r\n|\n\r|\r|\n)/g, '<br>');
-    }
-
-    function escapeHtml(text) {
-        if (!text) return '';
-        return text.replace(/&/g, "&amp;")
-                   .replace(/</g, "&lt;")
-                   .replace(/>/g, "&gt;")
-                   .replace(/"/g, "&quot;")
-                   .replace(/'/g, "&#039;");
-    }
-
     if (frontTextEl) frontTextEl.addEventListener('input', updatePreview);
     if (backTextEl) backTextEl.addEventListener('input', updatePreview);
     if (frontLatex) frontLatex.addEventListener('input', updatePreview);

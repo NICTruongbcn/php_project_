@@ -50,7 +50,8 @@
                                     @endif
                                     <span class="text-xs font-semibold px-2 py-1 rounded-full 
                                         {{ $note->type === 'vocab' ? 'bg-green-100 text-green-800' : 
-                                           ($note->type === 'formula' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800') }}">
+                                           ($note->type === 'formula' ? 'bg-purple-100 text-purple-800' : 
+                                           'bg-blue-100 text-blue-800') }}">
                                         {{ ucfirst($note->type) }}
                                     </span>
                                 </div>

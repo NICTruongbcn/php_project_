@@ -73,7 +73,7 @@
             <div class="space-y-6">
                 <div>
                     <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
-                        Note Title *
+                        Note Title *    
                     </label>
                     <input type="text" name="title" id="title" required
                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"

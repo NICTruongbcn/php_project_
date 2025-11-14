@@ -59,19 +59,18 @@ class StudyController extends Controller
             'started_at' => $startedAt,
         ]);
 
-        $pages = $note->pages()->orderBy('position')->get()->shuffle();
-        foreach ($pages as $index => $page) {
-            SessionQueueItem::create([
-                'session_id' => $session->id,
-                'page_id' => $page->id,
-                'queue_position' => $index + 1,
-                'status' => 'pending',
-                'next_review_at' => $startedAt,
-                'ease_factor' => 2.5,
-                'interval_days' => 0,
-                'repetition_count' => 0,
-            ]);
-        }
+     $pages = $note->pages()->orderBy('position')->get()->shuffle();
+    foreach ($pages as $index => $page) {
+        SessionQueueItem::create([
+            'session_id' => $session->id,
+            'page_id' => $page->id,
+            'queue_position' => $index + 1,
+            'status' => 'pending',
+            'next_review_at' => $startedAt,
+            'interval_days' => 0,
+            'repetition_count' => 0,
+        ]);
+    }
 
         return redirect()->route('study.session', $session)
                         ->with('success', 'Study session started!');
@@ -292,46 +291,28 @@ class StudyController extends Controller
         return $methods[$method]['intervals'] ?? [1, 3, 7, 14, 30];
     }
 
-    private function updateQueueItem($queueItem, $quality, $session)
-    {
-        if ($quality < 3) {
-            $maxPosition = $session->queueItems()->max('queue_position') ?? 0;
-            
-            $queueItem->update([
-                'repetition_count' => 0,
-                'interval_days' => 1,
-                'ease_factor' => max(1.3, $queueItem->ease_factor - 0.2),
-                'status' => 'again',
-                'queue_position' => $maxPosition + 1,
-                'next_review_at' => now()->addMinutes(10),
-                'last_quality' => $quality,
-                'last_reviewed_at' => now(),
-            ]);
-        } else {
-            $newRepetition = $queueItem->repetition_count + 1;
-            
-            $intervals = [1, 2, 4, 8, 16, 30];
-            
-            if ($newRepetition <= count($intervals)) {
-                $interval = $intervals[$newRepetition - 1];
-            } else {
-                $interval = round($queueItem->interval_days * $queueItem->ease_factor);
-            }
-
-            $newEase = $queueItem->ease_factor + (0.1 - (5 - $quality) * (0.08 + (5 - $quality) * 0.02));
-            $newEase = max(1.3, min(2.5, $newEase));
-
-            $queueItem->update([
-                'repetition_count' => $newRepetition,
-                'interval_days' => $interval,
-                'ease_factor' => $newEase,
-                'status' => 'done',
-                'next_review_at' => now()->addDays($interval),
-                'last_quality' => $quality,
-                'last_reviewed_at' => now(),
-            ]);
-        }
+private function updateQueueItem($queueItem, $quality, $session)
+{
+    $newRepetition = $queueItem->repetition_count + 1;
+    
+    $intervals = $this->getStudyMethods()[$session->method]['intervals'];    
+    
+    if ($newRepetition <= count($intervals)) {
+        $interval = $intervals[$newRepetition - 1];
+    } else {
+        $interval = $intervals[0];     
+        $newRepetition = 1;            
     }
+
+    $queueItem->update([    
+        'repetition_count' => $newRepetition,
+        'interval_days' => $interval,
+        'status' => 'done',
+        'next_review_at' => now()->addDays($interval),
+        'last_quality' => $quality,
+        'last_reviewed_at' => now(),
+    ]);
+}
     
     public function reviewSessions()
     {
@@ -353,83 +334,81 @@ class StudyController extends Controller
         return view('study.review-sessions', compact('reviewSessions'));
     }
 
-    public function startReview(Note $note)
-    {
-        if ($note->user_id !== AuthHelper::id()) {
-            abort(403);
-        }
+  public function startReview(Note $note)
+{
+    if ($note->user_id !== AuthHelper::id()) {
+        abort(403);
+    }
 
-        if ($note->next_review_at && $note->next_review_at->gt(now())) {
-            return redirect()->back()
-                            ->with('error', 'Next review is scheduled for ' . $note->next_review_at->format('M d, Y'));
-        }
+    if ($note->next_review_at && $note->next_review_at->gt(now())) {
+        return redirect()->back()
+                        ->with('error', 'Next review is scheduled for ' . $note->next_review_at->format('M d, Y'));
+    }
 
-        // Tạo session review mới
-        $startedAt = Carbon::now();
+    $startedAt = Carbon::now();
 
-        $session = StudySession::create([
-            'user_id' => AuthHelper::id(),
-            'note_id' => $note->id,
-            'method' => $note->study_method,
-            'config' => json_encode([
-                'study_time' => 25,
-                'break_time' => 5,
-                'intervals' => $this->getIntervals($note->study_method),
-            ]),
-            'started_at' => $startedAt,
+    $session = StudySession::create([
+        'user_id' => AuthHelper::id(),
+        'note_id' => $note->id,
+        'method' => $note->study_method,
+        'config' => json_encode([
+            'study_time' => 25,
+            'break_time' => 5,
+            'intervals' => $this->getIntervals($note->study_method),
+        ]),
+        'started_at' => $startedAt,
+    ]);
+
+    $queueItems = SessionQueueItem::whereHas('session', function($query) use ($note) {
+            $query->where('note_id', $note->id)
+                  ->where('user_id', AuthHelper::id());
+        })
+        ->where(function($query) {
+            $query->where('status', 'pending')
+                  ->orWhere('status', 'again')
+                  ->orWhere(function($q) {
+                      $q->where('status', 'done')
+                        ->where('next_review_at', '<=', now());
+                  });
+        })
+        ->with('page')
+        ->get();
+
+    foreach ($queueItems as $index => $queueItem) {
+        SessionQueueItem::create([
+            'session_id' => $session->id,
+            'page_id' => $queueItem->page_id,
+            'queue_position' => $index + 1,
+            'status' => 'pending',
+            'next_review_at' => $startedAt,
+            'interval_days' => $queueItem->interval_days,
+            'repetition_count' => $queueItem->repetition_count,
         ]);
-
-        $queueItems = SessionQueueItem::whereHas('session', function($query) use ($note) {
-                $query->where('note_id', $note->id)
-                      ->where('user_id', AuthHelper::id());
-            })
-            ->where(function($query) {
-                $query->where('status', 'pending')
-                      ->orWhere('status', 'again')
-                      ->orWhere(function($q) {
-                          $q->where('status', 'done')
-                            ->where('next_review_at', '<=', now());
-                      });
-            })
-            ->with('page')
-            ->get();
-
-        foreach ($queueItems as $index => $queueItem) {
-            SessionQueueItem::create([
-                'session_id' => $session->id,
-                'page_id' => $queueItem->page_id,
-                'queue_position' => $index + 1,
-                'status' => 'pending',
-                'next_review_at' => $startedAt,
-                'ease_factor' => $queueItem->ease_factor,
-                'interval_days' => $queueItem->interval_days,
-                'repetition_count' => $queueItem->repetition_count,
-            ]);
-        }
-
-        $note->update(['next_review_at' => null]);
-
-        return redirect()->route('study.session', $session)
-                        ->with('success', 'Review session started!');
     }
 
-    private function calculateNextReviewDate(Note $note)
-    {
-        if (!$note->study_method) {
-            return null;
-        }
+    $note->update(['next_review_at' => null]);
 
-        $nextReview = SessionQueueItem::whereHas('session', function($query) use ($note) {
-                $query->where('note_id', $note->id)
-                      ->where('user_id', AuthHelper::id());
-            })
-            ->where('status', 'done')
-            ->where('next_review_at', '>', now())
-            ->orderBy('next_review_at', 'asc')
-            ->first();
-
-        return $nextReview ? $nextReview->next_review_at : null;
+    return redirect()->route('study.session', $session)
+                    ->with('success', 'Review session started!');
+}
+private function calculateNextReviewDate(Note $note)
+{
+    if (!$note->study_method) {
+        return null;
     }
+
+    $userSessions = StudySession::where('note_id', $note->id)
+                                ->where('user_id', AuthHelper::id())
+                                ->pluck('id');
+
+    $nextReview = SessionQueueItem::whereIn('session_id', $userSessions)
+                                ->where('status', 'done')
+                                ->where('next_review_at', '>', now())
+                                ->orderBy('next_review_at', 'asc')
+                                ->first();
+
+    return $nextReview ? $nextReview->next_review_at : null;
+}
 
     private function updateNextReviewDate(Note $note)
     {

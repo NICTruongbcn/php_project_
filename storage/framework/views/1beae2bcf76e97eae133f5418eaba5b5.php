@@ -15,18 +15,19 @@
                 </p>
 
                 <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-12">
-                    <?php if(auth()->guard()->check()): ?>
-                        <a href="<?php echo e(route('dashboard')); ?>" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
-                            Go to Dashboard <i class="fas fa-arrow-right ml-2"></i>
-                        </a>
-                    <?php else: ?>
-                        <a href="<?php echo e(route('register')); ?>" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
-                            Start Learning Now <i class="fas fa-arrow-right ml-2"></i>
-                        </a>
-                    <?php endif; ?>
-                    <a href="#methods" class="border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-blue-600 font-bold text-lg transition-all duration-300">
-                        Learn More
-                    </a>
+                 <?php if(session('user')): ?>
+    <a href="<?php echo e(route('dashboard')); ?>" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
+        Go to Dashboard <i class="fas fa-arrow-right ml-2"></i>
+    </a>
+<?php else: ?>
+    <a href="<?php echo e(route('register')); ?>" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
+        Start Learning Now <i class="fas fa-arrow-right ml-2"></i>
+    </a>
+<?php endif; ?>
+
+<a href="#methods" class="border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-blue-600 font-bold text-lg transition-all duration-300">
+    Learn More
+</a>
                 </div>
 
                 <div class="flex justify-center space-x-8 mt-12">
