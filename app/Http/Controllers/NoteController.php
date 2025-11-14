@@ -61,7 +61,6 @@ class NoteController extends Controller
                            ->withErrors(['error' =>$e->getMessage() ]);
         }
     }
-
     public function show(Note $note)
     {
         if ($note->user_id !== AuthHelper::id()) {
@@ -71,10 +70,6 @@ class NoteController extends Controller
         $pages = $note->pages()->orderBy('position')->get();
         return view('notes.show', compact('note', 'pages'));
     }
-
-
-
-
     public function destroy(Note $note)
     {
         if ($note->user_id !== AuthHelper::id()) {

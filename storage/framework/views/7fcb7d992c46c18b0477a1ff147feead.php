@@ -134,62 +134,7 @@
         </div>
     </footer>
 
-    <script>
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-
-        function startBreakTimer(minutes) {
-            const overlay = document.getElementById('breakOverlay');
-            const timer = document.getElementById('breakTimer');
-            let timeLeft = minutes * 60;
-
-            overlay.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-
-            const countdown = setInterval(() => {
-                const minutes = Math.floor(timeLeft / 60);
-                const seconds = timeLeft % 60;
-                timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-                if (timeLeft <= 0) {
-                    clearInterval(countdown);
-                    overlay.classList.add('hidden');
-                    document.body.style.overflow = 'auto';
-                    if (typeof onBreakEnd === 'function') {
-                        onBreakEnd();
-                    }
-                }
-                timeLeft--;
-            }, 1000);
-        }
-
-        function flipCard(card) {
-            card.classList.toggle('flipped');
-        }
-
-        function rateQuality(quality) {
-            document.querySelectorAll('.quality-btn').forEach(btn => {
-                btn.classList.remove('bg-blue-600', 'text-white');
-                btn.classList.add('bg-gray-200', 'text-gray-700');
-            });
-
-            const selectedBtn = document.querySelector(`[data-quality="${quality}"]`);
-            selectedBtn.classList.remove('bg-gray-200', 'text-gray-700');
-            selectedBtn.classList.add('bg-blue-600', 'text-white');
-
-            document.getElementById('quality').value = quality;
-        }
-    </script>
+    
 
     <?php echo $__env->yieldContent('scripts'); ?>
 </body>

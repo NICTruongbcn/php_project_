@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('title', 'Studying - MemoryMaster'); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -238,30 +236,29 @@ function rateAnswer(rating) {
     });
 }
 
-let startX = 0;
-let endX = 0;
+// let startX = 0;
+// let endX = 0;
 
-document.addEventListener('touchstart', function(event) {
-    startX = event.changedTouches[0].screenX;
-});
+// document.addEventListener('touchstart', function(event) {
+//     startX = event.changedTouches[0].screenX;
+// });
 
-document.addEventListener('touchend', function(event) {
-    endX = event.changedTouches[0].screenX;
-    handleSwipe();
-});
+// document.addEventListener('touchend', function(event) {
+//     endX = event.changedTouches[0].screenX;
+//     handleSwipe();
+// });
 
-function handleSwipe() {
-    const diff = endX - startX;
+// function handleSwipe() {
+//     const diff = endX - startX;
     
-    if (Math.abs(diff) > 50) {
-        if (diff > 0 && !answerShown) {
-            showAnswer();
-        } else if (diff < 0 && answerShown) {
-            rateAnswer(4); 
-        }
-    }
-}
-
+//     if (Math.abs(diff) > 50) {
+//         if (diff > 0 && !answerShown) {
+//             showAnswer();
+//         } else if (diff < 0 && answerShown) {
+//             rateAnswer(4); 
+//         }
+//     }
+// }
 window.addEventListener('beforeunload', function() {
     clearInterval(timerInterval);
 });

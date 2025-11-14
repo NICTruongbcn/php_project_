@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('title', 'Add Page - MemoryMaster'); ?>
 
 <?php $__env->startSection('content'); ?>

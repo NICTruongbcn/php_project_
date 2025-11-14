@@ -17,9 +17,6 @@ class NormalNoteController extends Controller
 
         return view('normal-notes.show', compact('note'));
     }
-
-
-
     public function updateContent(Request $request, Note $note)
     {
         if ($note->user_id !== AuthHelper::id() || $note->type !== 'normal') {
@@ -51,7 +48,6 @@ class NormalNoteController extends Controller
         return redirect()->route('normal-notes.show', $note->id)
                         ->with('success', 'Content updated successfully!');
     }
-
     public function destroy(Note $note)
     {
         if ($note->user_id !== AuthHelper::id() || $note->type !== 'normal') {

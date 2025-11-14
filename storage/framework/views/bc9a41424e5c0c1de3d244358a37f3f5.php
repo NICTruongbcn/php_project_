@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('title', 'Dashboard - MemoryMaster'); ?>
 
 <?php $__env->startSection('content'); ?>

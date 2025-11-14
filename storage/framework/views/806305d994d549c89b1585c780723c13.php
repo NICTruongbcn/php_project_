@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('title', 'Session Complete - MemoryMaster'); ?>
 
 <?php $__env->startSection('content'); ?>

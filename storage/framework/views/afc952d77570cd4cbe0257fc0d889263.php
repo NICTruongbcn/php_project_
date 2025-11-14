@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('title', $note->title . ' - MemoryMaster'); ?>
 
 <?php $__env->startSection('content'); ?>
