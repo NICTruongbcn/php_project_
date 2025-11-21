@@ -38,8 +38,8 @@ class PageController extends Controller
         }
 
         $validationRules = [
-            'front_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'back_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'front_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'back_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'tags' => 'nullable|string|max:255',
         ];
 
@@ -58,7 +58,8 @@ class PageController extends Controller
             
             case 'normal':
             default:
-           
+                $validationRules['front_text'] = 'required|string|max:1000';
+                $validationRules['back_text'] = 'required|string|max:1000';
                 break;
         }
 
@@ -92,8 +93,8 @@ class PageController extends Controller
             'back_text' => $request->back_text,
             'front_latex' => $request->front_latex,
             'back_latex' => $request->back_latex,
-            'front_image' => $frontImagePath,
-            'back_image' => $backImagePath,
+            'image_front' => $frontImagePath,
+            'image_back' => $backImagePath,
             'source' => 'user',
         ]);
 
@@ -131,8 +132,8 @@ class PageController extends Controller
         $note = $page->note;
 
         $validationRules = [
-            'front_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'back_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'front_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'back_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
             'tags' => 'nullable|string|max:255',
         ];
 
@@ -166,18 +167,32 @@ class PageController extends Controller
             }
         }
 
-        $frontImagePath = $page->front_image;
-        $backImagePath = $page->back_image;
+        $frontImagePath = $page->image_front;
+        $backImagePath = $page->image_back;
+
+        if ($request->has('remove_front_image') && $request->remove_front_image == '1') {
+            if ($frontImagePath && Storage::disk('public')->exists($frontImagePath)) {
+                Storage::disk('public')->delete($frontImagePath);
+            }
+            $frontImagePath = null;
+        }
+
+        if ($request->has('remove_back_image') && $request->remove_back_image == '1') {
+            if ($backImagePath && Storage::disk('public')->exists($backImagePath)) {
+                Storage::disk('public')->delete($backImagePath);
+            }
+            $backImagePath = null;
+        }
 
         if ($request->hasFile('front_image')) {
-            if ($frontImagePath) {
+            if ($frontImagePath && Storage::disk('public')->exists($frontImagePath)) {
                 Storage::disk('public')->delete($frontImagePath);
             }
             $frontImagePath = $request->file('front_image')->store('pages', 'public');
         }
 
         if ($request->hasFile('back_image')) {
-            if ($backImagePath) {
+            if ($backImagePath && Storage::disk('public')->exists($backImagePath)) {
                 Storage::disk('public')->delete($backImagePath);
             }
             $backImagePath = $request->file('back_image')->store('pages', 'public');
@@ -188,8 +203,8 @@ class PageController extends Controller
             'back_text' => $request->back_text,
             'front_latex' => $request->front_latex,
             'back_latex' => $request->back_latex,
-            'front_image' => $frontImagePath,
-            'back_image' => $backImagePath,
+            'image_front' => $frontImagePath,
+            'image_back' => $backImagePath,
         ]);
 
         return redirect()->route('notes.show', $page->note_id)
@@ -202,12 +217,13 @@ class PageController extends Controller
             abort(403);
         }
 
-        if ($page->front_image) {
-            Storage::disk('public')->delete($page->front_image);
+        if ($page->image_front && Storage::disk('public')->exists($page->image_front)) {
+            Storage::disk('public')->delete($page->image_front);
         }
-        if ($page->back_image) {
-            Storage::disk('public')->delete($page->back_image);
+        if ($page->image_back && Storage::disk('public')->exists($page->image_back)) {
+            Storage::disk('public')->delete($page->image_back);
         }
+        
         $noteId = $page->note_id;
         $page->delete();
 

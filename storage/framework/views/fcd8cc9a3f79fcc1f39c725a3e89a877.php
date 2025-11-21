@@ -49,11 +49,11 @@
                         </div>
                     <?php endif; ?>
                     
-                    <?php if($page->front_image): ?>
+                    <?php if($page->image_front): ?>
                         <div class="my-4">
-                            <img src="<?php echo e(Storage::url($page->front_image)); ?>" 
+                            <img src="<?php echo e(Storage::url($page->image_front)); ?>" 
                                  alt="Front image" 
-                                 class="max-w-full h-auto rounded-lg border border-gray-300 max-h-64 mx-auto">
+                                 class="max-w-full h-auto rounded-lg border border-gray-300 max-h-64 mx-auto study-image">
                         </div>
                     <?php endif; ?>
                 </div>
@@ -79,11 +79,11 @@
                         </div>
                     <?php endif; ?>
                     
-                    <?php if($page->back_image): ?>
+                    <?php if($page->image_back): ?>
                         <div class="my-4">
-                            <img src="<?php echo e(Storage::url($page->back_image)); ?>" 
+                            <img src="<?php echo e(Storage::url($page->image_back)); ?>" 
                                  alt="Back image" 
-                                 class="max-w-full h-auto rounded-lg border border-gray-300 max-h-64 mx-auto">
+                                 class="max-w-full h-auto rounded-lg border border-gray-300 max-h-64 mx-auto study-image">
                         </div>
                     <?php endif; ?>
                 </div>
@@ -152,6 +152,12 @@
     transform: scale(1.1);
 }
 
+.study-image {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+}
+
 .bg-blue-100 { background-color: #dbeafe; }
 .border-blue-500 { border-color: #3b82f6; }
 .bg-green-100 { background-color: #dcfce7; }
@@ -160,6 +166,13 @@
 .border-red-500 { border-color: #ef4444; }
 .bg-purple-100 { background-color: #f3e8ff; }
 .border-purple-500 { border-color: #a855f7; }
+.bg-orange-100 { background-color: #ffedd5; }
+.border-orange-500 { border-color: #f97316; }
+.text-blue-600 { color: #2563eb; }
+.text-green-600 { color: #16a34a; }
+.text-red-600 { color: #dc2626; }
+.text-purple-600 { color: #9333ea; }
+.text-orange-600 { color: #ea580c; }
 </style>
 
 <script>
@@ -200,6 +213,7 @@ function rateAnswer(rating) {
     const responseTime = Math.floor((Date.now() - startTime) / 1000); 
     
     clearInterval(timerInterval);
+    
     fetch('<?php echo e(route("study.review", $session)); ?>', {
         method: 'POST',
         headers: {
@@ -236,32 +250,22 @@ function rateAnswer(rating) {
     });
 }
 
-// let startX = 0;
-// let endX = 0;
+document.addEventListener('keydown', function(event) {
+    if (event.code === 'Space' && !answerShown) {
+        event.preventDefault();
+        showAnswer();
+    } else if (answerShown && event.code >= 'Digit0' && event.code <= 'Digit5') {
+        event.preventDefault();
+        const rating = parseInt(event.code.replace('Digit', ''));
+        rateAnswer(rating);
+    }
+});
 
-// document.addEventListener('touchstart', function(event) {
-//     startX = event.changedTouches[0].screenX;
-// });
-
-// document.addEventListener('touchend', function(event) {
-//     endX = event.changedTouches[0].screenX;
-//     handleSwipe();
-// });
-
-// function handleSwipe() {
-//     const diff = endX - startX;
-    
-//     if (Math.abs(diff) > 50) {
-//         if (diff > 0 && !answerShown) {
-//             showAnswer();
-//         } else if (diff < 0 && answerShown) {
-//             rateAnswer(4); 
-//         }
-//     }
-// }
 window.addEventListener('beforeunload', function() {
     clearInterval(timerInterval);
 });
+
+updateLiveTimer();
 </script>
 <?php $__env->stopSection(); ?>
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\study\NIC\DGL-123(intoduction PHP)\php_project\php_project_\resources\views/study/session.blade.php ENDPATH**/ ?>

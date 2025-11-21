@@ -100,9 +100,9 @@
                         
                         <div class="custom-file-input">
                             <input type="file" name="front_image" id="front_image" 
-                                   accept="image/*"
+                                   accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
                                    class="file-input hidden">
-                            <label for="front_image" class="file-input-label">
+                            <label for="front_image" class="file-input-label cursor-pointer">
                                 <i class="fas fa-upload mr-2"></i>
                                 <span class="file-input-text">Choose file</span>
                             </label>
@@ -150,9 +150,9 @@
                         
                         <div class="custom-file-input">
                             <input type="file" name="back_image" id="back_image" 
-                                   accept="image/*"
+                                   accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
                                    class="file-input hidden">
-                            <label for="back_image" class="file-input-label">
+                            <label for="back_image" class="file-input-label cursor-pointer">
                                 <i class="fas fa-upload mr-2"></i>
                                 <span class="file-input-text">Choose file</span>
                             </label>
@@ -276,6 +276,13 @@ textarea {
     border-radius: 4px;
     background-color: #f9fafb;
 }
+
+.preview-image {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
 </style>
 
 <script>
@@ -292,43 +299,57 @@ document.addEventListener('DOMContentLoaded', function() {
     const backImagePreview = document.getElementById('back-image-preview');
     const frontFileName = document.getElementById('front-file-name');
     const backFileName = document.getElementById('back-file-name');
-function updatePreview() {
-    const frontValue = frontTextEl ? frontTextEl.value : '';
-    let frontContent = '';
-    if (frontTextEl) {
-        if ('{{ $note->type }}' === 'vocab') {
-            frontContent = `<div class="font-bold text-xl break-words">${frontValue || 'Title will appear here...'}</div>`;
-        } else {
-            frontContent = frontValue || 'Content will appear here...';
-            frontContent = `<div class="break-words whitespace-pre-wrap">${frontContent}</div>`;
-        }
-    } else {
-        frontContent = 'Content will appear here...';
-    }
-    if (frontLatex && frontLatex.value) {
-        frontContent += '<br><br><div class="bg-gray-100 p-3 rounded font-mono text-sm break-words whitespace-pre-wrap">' + 
-                       'LaTeX: ' + frontLatex.value + '</div>';
-    }
-    frontPreview.innerHTML = frontContent;
 
-    const backValue = backTextEl ? backTextEl.value : '';
-    let backContent = backValue || 'Content will appear here...';
-    backContent = `<div class="break-words whitespace-pre-wrap">${backContent}</div>`;
-    
-    if (backLatex && backLatex.value) {
-        backContent += '<br><br><div class="bg-gray-100 p-3 rounded font-mono text-sm break-words whitespace-pre-wrap">' + 
-                      'LaTeX: ' + backLatex.value + '</div>';
+    function updatePreview() {
+        let frontContent = '';
+        if (frontTextEl && frontTextEl.value) {
+            if ('{{ $note->type }}' === 'vocab') {
+                frontContent = `<div class="font-bold text-xl break-words">${frontTextEl.value}</div>`;
+            } else {
+                frontContent = `<div class="break-words whitespace-pre-wrap">${frontTextEl.value}</div>`;
+            }
+        } else {
+            frontContent = '<div class="text-gray-400">Content will appear here...</div>';
+        }
+
+        if (frontLatex && frontLatex.value) {
+            frontContent += '<div class="mt-3 bg-gray-100 p-3 rounded font-mono text-sm break-words whitespace-pre-wrap">' + 
+                           '<div class="font-semibold text-xs text-gray-500 mb-1">LaTeX:</div>' + 
+                           frontLatex.value + '</div>';
+        }
+
+        frontPreview.innerHTML = frontContent;
+
+        let backContent = '';
+        if (backTextEl && backTextEl.value) {
+            backContent = `<div class="break-words whitespace-pre-wrap">${backTextEl.value}</div>`;
+        } else {
+            backContent = '<div class="text-gray-400">Content will appear here...</div>';
+        }
+        
+        if (backLatex && backLatex.value) {
+            backContent += '<div class="mt-3 bg-gray-100 p-3 rounded font-mono text-sm break-words whitespace-pre-wrap">' + 
+                          '<div class="font-semibold text-xs text-gray-500 mb-1">LaTeX:</div>' + 
+                          backLatex.value + '</div>';
+        }
+
+        backPreview.innerHTML = backContent;
     }
-    backPreview.innerHTML = backContent;
-}
+
     function handleImagePreview(input, previewElement, fileNameElement) {
         if (input && input.files && input.files[0]) {
             const file = input.files[0];
             const reader = new FileReader();
-            fileNameElement.textContent = `Selected: ${file.name}`;
-            fileNameElement.classList.remove('hidden');
+            
+            if (fileNameElement) {
+                fileNameElement.textContent = `Selected: ${file.name}`;
+                fileNameElement.classList.remove('hidden');
+            }
+            
             reader.onload = function(e) {
-                previewElement.innerHTML = '<img src="' + e.target.result + '" class="max-w-full h-auto rounded-lg border border-gray-300" alt="Preview">';
+                if (previewElement) {
+                    previewElement.innerHTML = `<img src="${e.target.result}" class="preview-image max-w-full h-auto" alt="Preview">`;
+                }
             }
             reader.readAsDataURL(file);
         } else {
@@ -340,12 +361,15 @@ function updatePreview() {
     function handleFileInputChange(input, fileNameElement) {
         if (input && input.files && input.files[0]) {
             const file = input.files[0];
-            fileNameElement.textContent = `Selected: ${file.name}`;
-            fileNameElement.classList.remove('hidden');
+            if (fileNameElement) {
+                fileNameElement.textContent = `Selected: ${file.name}`;
+                fileNameElement.classList.remove('hidden');
+            }
         } else {
-            fileNameElement.classList.add('hidden');
+            if (fileNameElement) fileNameElement.classList.add('hidden');
         }
     }
+
     if (frontTextEl) frontTextEl.addEventListener('input', updatePreview);
     if (backTextEl) backTextEl.addEventListener('input', updatePreview);
     if (frontLatex) frontLatex.addEventListener('input', updatePreview);
