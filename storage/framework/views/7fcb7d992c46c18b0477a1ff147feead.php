@@ -134,7 +134,7 @@
         </div>
     </footer>
 
-    
+ 
 
     <?php echo $__env->yieldContent('scripts'); ?>
 </body>

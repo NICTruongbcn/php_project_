@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Note;
 use App\Models\StudySession;
 use App\Helpers\AuthHelper;
-use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {

@@ -19,6 +19,7 @@ class NormalNoteController extends Controller
     }
     public function updateContent(Request $request, Note $note)
     {
+        
         if ($note->user_id !== AuthHelper::id() || $note->type !== 'normal') {
             abort(403);
         }
@@ -32,16 +33,15 @@ class NormalNoteController extends Controller
         if ($page) {
             $page->update([
                 'front_text' => $note->title,
-                'back_text' => $request->content,
+                'back_text' => $request->input('content'),
             ]);
         } else {
             Page::create([
                 'note_id' => $note->id,
                 'position' => 1,
                 'front_text' => $note->title,
-                'back_text' => $request->content,
+                'back_text' => $request->input('content'),
                 'source' => 'user',
-                'meta' => json_encode([]),
             ]);
         }
 

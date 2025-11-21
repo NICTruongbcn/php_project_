@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Helpers\AuthHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -31,9 +32,9 @@ class Note extends Model
 
 public function getStudyStatus()
 {
-    $dueItems = \App\Models\SessionQueueItem::whereHas('session', function($query) {
+    $dueItems = SessionQueueItem::whereHas('session', function($query) {
             $query->where('note_id', $this->id)
-                  ->where('user_id', \App\Helpers\AuthHelper::id());
+                  ->where('user_id', AuthHelper::id());
         })
         ->where(function($query) {
             $query->where('status', 'pending')
@@ -49,9 +50,9 @@ public function getStudyStatus()
         return 'ready_for_review';
     }
 
-    $nextReview = \App\Models\SessionQueueItem::whereHas('session', function($query) {
+    $nextReview = SessionQueueItem::whereHas('session', function($query) {
             $query->where('note_id', $this->id)
-                  ->where('user_id', \App\Helpers\AuthHelper::id());
+                  ->where('user_id', AuthHelper::id());
         })
         ->where('status', 'done')
         ->where('next_review_at', '>', now())

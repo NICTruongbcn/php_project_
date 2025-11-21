@@ -1,5 +1,3 @@
-
-
 <?php $__env->startSection('title', 'Edit Page - MemoryMaster'); ?>
 
 <?php $__env->startSection('content'); ?>
@@ -127,7 +125,7 @@
                     <?php if($page->note->type === 'formula'): ?>
                     <div>
                         <label for="back_latex" class="block text-sm font-medium text-gray-700 mb-2">
-                            LaTeX Formula (Optional)
+                            LaTeX Formula (Optional)        
                         </label>
                         <textarea name="back_latex" id="back_latex" rows="2"
                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors font-mono text-sm"
