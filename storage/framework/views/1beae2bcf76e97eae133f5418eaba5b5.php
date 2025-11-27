@@ -1,8 +1,16 @@
 <?php $__env->startSection('title', 'MemoryMaster - Master Your Memory'); ?>
 
 <?php $__env->startSection('content'); ?>
+    <!-- Hero Section with Logo -->
     <section class="hero-gradient text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <!-- Logo in Hero Section -->
+            <div class="flex justify-center mb-8">
+                <img src="<?php echo e(asset('images/logo.png')); ?>" 
+                     alt="MemoryMaster Logo" 
+                     class="h-16 w-auto md:h-20"> <!-- Larger logo in hero -->
+            </div>
+            
             <div class="text-center">
                 <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">
                     Master Your Memory With<br>
@@ -14,22 +22,24 @@
                     From memory palaces to spaced repetition, transform learning into an art.
                 </p>
 
+                <!-- CTA Buttons -->
                 <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-12">
-                 <?php if(session('user')): ?>
-    <a href="<?php echo e(route('dashboard')); ?>" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
-        Go to Dashboard <i class="fas fa-arrow-right ml-2"></i>
-    </a>
-<?php else: ?>
-    <a href="<?php echo e(route('register')); ?>" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
-        Start Learning Now <i class="fas fa-arrow-right ml-2"></i>
-    </a>
-<?php endif; ?>
+                    <?php if(session('user')): ?>
+                        <a href="<?php echo e(route('dashboard')); ?>" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
+                            Go to Dashboard <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    <?php else: ?>
+                        <a href="<?php echo e(route('register')); ?>" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
+                            Start Learning Now <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    <?php endif; ?>
 
-<a href="#methods" class="border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-blue-600 font-bold text-lg transition-all duration-300">
-    Learn More
-</a>
+                    <a href="#methods" class="border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-blue-600 font-bold text-lg transition-all duration-300">
+                        Learn More
+                    </a>
                 </div>
 
+                <!-- Method Indicators -->
                 <div class="flex justify-center space-x-8 mt-12">
                     <div class="text-center">
                         <div class="w-3 h-3 bg-yellow-400 rounded-full mx-auto mb-2"></div>
@@ -52,6 +62,7 @@
         </div>
     </section>
 
+    <!-- Methods Section -->
     <section id="methods" class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
@@ -64,6 +75,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Method of Loci Card -->
                 <div class="method-card bg-gradient-to-br from-purple-50 to-blue-50 rounded-xl p-6 shadow-lg border border-purple-100">
                     <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
                         <i class="fas fa-landmark text-white text-xl"></i>
@@ -92,6 +104,7 @@
                     </button>
                 </div>
 
+                <!-- Spaced Repetition Card -->
                 <div class="method-card bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-6 shadow-lg border border-green-100">
                     <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mb-4">
                         <i class="fas fa-chart-line text-white text-xl"></i>
@@ -120,6 +133,7 @@
                     </button>
                 </div>
 
+                <!-- Mnemonic Devices Card -->
                 <div class="method-card bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-6 shadow-lg border border-yellow-100">
                     <div class="w-12 h-12 bg-yellow-600 rounded-lg flex items-center justify-center mb-4">
                         <i class="fas fa-lightbulb text-white text-xl"></i>
@@ -148,6 +162,7 @@
                     </button>
                 </div>
 
+                <!-- Active Recall Card -->
                 <div class="method-card bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-6 shadow-lg border border-red-100">
                     <div class="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center mb-4">
                         <i class="fas fa-brain text-white text-xl"></i>
@@ -179,6 +194,7 @@
         </div>
     </section>
 
+    <!-- Features Section -->
     <section id="features" class="py-20 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
@@ -224,6 +240,7 @@
         </div>
     </section>
 
+    <!-- Final CTA Section -->
     <section class="py-20 bg-blue-600">
         <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
             <h2 class="text-4xl font-bold text-white mb-6">

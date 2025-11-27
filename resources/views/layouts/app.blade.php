@@ -35,7 +35,9 @@
             <div class="flex justify-between items-center py-4">
                 <div class="flex items-center space-x-2">
                     <a href="{{ route('home') }}" class="flex items-center space-x-2">
-                        <div class="w-8 h-8 bg-blue-600 rounded-full"></div>
+                        <img src="{{ asset('images/logo.png') }}" 
+                             alt="MemoryMaster Logo" 
+                             class="h-8 w-auto md:h-10"> 
                         <span class="text-xl font-bold text-gray-800">MemoryMaster</span>
                     </a>
                 </div>
@@ -71,7 +73,6 @@
     <main>
         @yield('content')
     </main>
-
     <div id="breakOverlay" class="break-overlay fixed inset-0 hidden items-center justify-center text-white">
         <div class="text-center">
             <div class="text-6xl mb-4">
@@ -89,7 +90,9 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
                 <div>
                     <div class="flex items-center space-x-2 mb-4">
-                        <div class="w-8 h-8 bg-blue-600 rounded-full"></div>
+                        <img src="{{ asset('images/logo.png') }}" 
+                             alt="MemoryMaster Logo" 
+                             class="h-8 w-auto">
                         <span class="text-xl font-bold">MemoryMaster</span>
                     </div>
                     <p class="text-gray-400">
@@ -132,8 +135,6 @@
             </div>
         </div>
     </footer>
-
- 
 
     @yield('scripts')
 </body>

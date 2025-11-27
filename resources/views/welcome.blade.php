@@ -5,6 +5,12 @@
 @section('content')
     <section class="hero-gradient text-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div class="flex justify-center mb-8">
+                <img src="{{ asset('images/logo.png') }}" 
+                     alt="MemoryMaster Logo" 
+                     class="h-16 w-auto md:h-20"> 
+            </div>
+            
             <div class="text-center">
                 <h1 class="text-5xl md:text-6xl font-bold mb-6 leading-tight">
                     Master Your Memory With<br>
@@ -17,19 +23,19 @@
                 </p>
 
                 <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-12">
-                 @if(session('user'))
-    <a href="{{ route('dashboard') }}" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
-        Go to Dashboard <i class="fas fa-arrow-right ml-2"></i>
-    </a>
-@else
-    <a href="{{ route('register') }}" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
-        Start Learning Now <i class="fas fa-arrow-right ml-2"></i>
-    </a>
-@endif
+                    @if(session('user'))
+                        <a href="{{ route('dashboard') }}" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
+                            Go to Dashboard <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    @else
+                        <a href="{{ route('register') }}" class="bg-yellow-400 text-gray-900 px-8 py-4 rounded-lg hover:bg-yellow-300 font-bold text-lg shadow-lg transition-all duration-300 transform hover:scale-105">
+                            Start Learning Now <i class="fas fa-arrow-right ml-2"></i>
+                        </a>
+                    @endif
 
-<a href="#methods" class="border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-blue-600 font-bold text-lg transition-all duration-300">
-    Learn More
-</a>
+                    <a href="#methods" class="border-2 border-white text-white px-8 py-4 rounded-lg hover:bg-white hover:text-blue-600 font-bold text-lg transition-all duration-300">
+                        Learn More
+                    </a>
                 </div>
 
                 <div class="flex justify-center space-x-8 mt-12">
@@ -180,7 +186,6 @@
             </div>
         </div>
     </section>
-
     <section id="features" class="py-20 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
