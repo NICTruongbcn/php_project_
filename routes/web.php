@@ -57,7 +57,8 @@ Route::post('/{note}/start-review', [StudyController::class, 'startReview'])->na
     });
 
 });
-
+Route::post('/study/session/{session}/save-time', [StudyController::class, 'saveTime'])->name('study.save-time');
+Route::get('/study/{session}/resume-from-break', [StudyController::class, 'resumeFromBreak'])->name('study.resume-from-break');
 Route::middleware(['auth.custom', 'admin.custom'])->group(function () {
     Route::get('/admin/dashboard', [AdminController::class, 'index'])->name('admin.dashboard');
 });

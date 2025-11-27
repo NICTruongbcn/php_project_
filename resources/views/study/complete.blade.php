@@ -23,11 +23,18 @@
             </div>
             <div class="bg-gray-50 rounded-lg p-6">
                 @php
-                    $safeTotalTime = max(0, $totalTime);
-                    $minutes = floor($safeTotalTime / 60);
+                    $safeTotalTime = max(1, $session->total_seconds); 
+                    $hours = floor($safeTotalTime / 3600);
+                    $minutes = floor(($safeTotalTime % 3600) / 60);
                     $seconds = $safeTotalTime % 60;
                 @endphp
-                <div class="text-2xl font-bold text-purple-600">{{ $minutes }}:{{ sprintf('%02d', $seconds) }}</div>
+                <div class="text-2xl font-bold text-purple-600">
+                    @if($hours > 0)
+                        {{ $hours }}h {{ $minutes }}m {{ $seconds }}s
+                    @else
+                        {{ $minutes }}m {{ $seconds }}s
+                    @endif
+                </div>
                 <div class="text-sm text-gray-600">Total Time</div>
             </div>
             <div class="bg-gray-50 rounded-lg p-6">

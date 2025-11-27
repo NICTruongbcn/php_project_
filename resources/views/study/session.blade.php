@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('title', 'Studying - MemoryMaster')
@@ -116,7 +117,7 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-4 gap-4 text-center">
+    <div class="grid grid-cols-5 gap-4 text-center">
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div class="text-2xl font-bold text-{{ $methodConfig['color'] }}-600">{{ $currentItem->queue_position }}</div>
             <div class="text-sm text-gray-600">Current</div>
@@ -127,11 +128,15 @@
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div class="text-2xl font-bold text-green-600" id="live-minutes">{{ $totalMinutes }}</div>
-            <div class="text-sm text-gray-600">Minutes</div>
+            <div class="text-sm text-gray-600">Total Minutes</div>
         </div>
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
             <div class="text-2xl font-bold text-blue-600" id="live-seconds">{{ $totalSeconds }}</div>
-            <div class="text-sm text-gray-600">Seconds</div>
+            <div class="text-sm text-gray-600">Total Seconds</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+            <div class="text-2xl font-bold text-orange-600" id="study-timer">{{ $remainingStudyTime }}:00</div>
+            <div class="text-sm text-gray-600">Study Time Left</div>
         </div>
     </div>
 </div>
@@ -176,27 +181,56 @@
 <script>
 let startTime = Date.now();
 let answerShown = false;
-let sessionStartTime = new Date('{{ $session->started_at }}').getTime();
 let timerInterval;
+let studyTimerInterval;
+
+// Sử dụng thời gian từ server - đây là tổng thời gian tích lũy
+let totalSessionSeconds = {{ $totalMinutes * 60 + $totalSeconds }};
+let studyTimeMinutes = {{ $studyTime }};
+let studyTimeSeconds = studyTimeMinutes * 60;
 
 function updateLiveTimer() {
-    const now = Date.now();
-    let elapsedMs = now - sessionStartTime;
+    totalSessionSeconds++;
     
-    if (elapsedMs < 0) {
-        elapsedMs = 0;
-        sessionStartTime = now;
+    const totalMinutes = Math.floor(totalSessionSeconds / 60);
+    const totalSeconds = totalSessionSeconds % 60;
+    
+    document.getElementById('live-minutes').textContent = totalMinutes;
+    document.getElementById('live-seconds').textContent = totalSeconds.toString().padStart(2, '0');
+}
+
+function updateStudyTimer() {
+    studyTimeSeconds--;
+    
+    if (studyTimeSeconds <= 0) {
+        // Lưu thời gian hiện tại trước khi chuyển trang
+        saveCurrentTime();
+        window.location.href = '{{ route("study.break", $session) }}';
+        return;
     }
     
-    const totalSeconds = Math.floor(elapsedMs / 1000);
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    
-    document.getElementById('live-minutes').textContent = minutes;
-    document.getElementById('live-seconds').textContent = seconds.toString().padStart(2, '0');
+    const minutes = Math.floor(studyTimeSeconds / 60);
+    const seconds = studyTimeSeconds % 60;
+    document.getElementById('study-timer').textContent = minutes + ':' + seconds.toString().padStart(2, '0');
+}
+
+// Hàm lưu thời gian hiện tại
+function saveCurrentTime() {
+    // Gửi request để lưu thời gian hiện tại
+    fetch('{{ route("study.save-time", $session) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            total_seconds: totalSessionSeconds
+        })
+    });
 }
 
 timerInterval = setInterval(updateLiveTimer, 1000);
+studyTimerInterval = setInterval(updateStudyTimer, 1000);
 
 function showAnswer() {
     document.getElementById('front-content').classList.add('hidden');
@@ -211,6 +245,10 @@ function rateAnswer(rating) {
     const responseTime = Math.floor((Date.now() - startTime) / 1000); 
     
     clearInterval(timerInterval);
+    clearInterval(studyTimerInterval);
+    
+    // Lưu thời gian trước khi gửi review
+    saveCurrentTime();
     
     fetch('{{ route("study.review", $session) }}', {
         method: 'POST',
@@ -221,7 +259,8 @@ function rateAnswer(rating) {
         body: JSON.stringify({
             page_id: {{ $page->id }},
             quality: rating,
-            response_time: responseTime
+            response_time: responseTime,
+            total_seconds: totalSessionSeconds // Gửi thời gian hiện tại
         })
     })
     .then(response => {
@@ -245,6 +284,7 @@ function rateAnswer(rating) {
         console.error('Error:', error);
         alert('Error submitting review. Please try again.');
         timerInterval = setInterval(updateLiveTimer, 1000);
+        studyTimerInterval = setInterval(updateStudyTimer, 1000);
     });
 }
 
@@ -260,9 +300,12 @@ document.addEventListener('keydown', function(event) {
 });
 
 window.addEventListener('beforeunload', function() {
+    saveCurrentTime(); // Lưu thời gian khi rời trang
     clearInterval(timerInterval);
+    clearInterval(studyTimerInterval);
 });
 
+// Khởi tạo timer ngay lập tức
 updateLiveTimer();
 </script>
 @endsection

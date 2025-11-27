@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers;
-
 use App\Models\Note;
 use App\Models\StudySession;
 use App\Models\SessionQueueItem;
@@ -55,22 +53,25 @@ class StudyController extends Controller
                 'study_time' => $request->study_time,
                 'break_time' => $request->break_time,
                 'intervals' => $this->getIntervals($request->study_method),
+                'current_study_start' => $startedAt->toISOString(),
+                'total_elapsed_seconds' => 0,
             ]),
             'started_at' => $startedAt,
+            'total_seconds' => 0,
         ]);
 
-     $pages = $note->pages()->orderBy('position')->get()->shuffle();
-    foreach ($pages as $index => $page) {
-        SessionQueueItem::create([
-            'session_id' => $session->id,
-            'page_id' => $page->id,
-            'queue_position' => $index + 1,
-            'status' => 'pending',
-            'next_review_at' => $startedAt,
-            'interval_days' => 0,
-            'repetition_count' => 0,
-        ]);
-    }
+        $pages = $note->pages()->orderBy('position')->get()->shuffle();
+        foreach ($pages as $index => $page) {
+            SessionQueueItem::create([
+                'session_id' => $session->id,
+                'page_id' => $page->id,
+                'queue_position' => $index + 1,
+                'status' => 'pending',
+                'next_review_at' => $startedAt,
+                'interval_days' => 0,
+                'repetition_count' => 0,
+            ]);
+        }
 
         return redirect()->route('study.session', $session)
                         ->with('success', 'Study session started!');
@@ -94,6 +95,35 @@ class StudyController extends Controller
             $started = $now;
         }
 
+        $config = json_decode($session->config, true);
+        $studyTime = $config['study_time'] ?? 25;
+        
+        $totalSessionSeconds = $session->total_seconds ?? 0;
+        $currentStudyStart = isset($config['current_study_start']) ? Carbon::parse($config['current_study_start']) : $now;
+        
+        if ($totalSessionSeconds == 0) {
+            $config['current_study_start'] = $now->toISOString();
+            $session->update([
+                'config' => json_encode($config),
+                'total_seconds' => 0
+            ]);
+            $totalSessionSeconds = 0;
+        } else {
+            $currentElapsedSeconds = $now->diffInSeconds($currentStudyStart);
+            $totalSessionSeconds = $totalSessionSeconds + $currentElapsedSeconds;
+            
+            $config['current_study_start'] = $now->toISOString();
+            $config['total_elapsed_seconds'] = $totalSessionSeconds;
+            $session->update([
+                'config' => json_encode($config),
+                'total_seconds' => $totalSessionSeconds
+            ]);
+        }
+        
+        $totalMinutes = floor($totalSessionSeconds / 60);
+        $totalSeconds = $totalSessionSeconds % 60;
+        $remainingStudyTime = max(0, $studyTime - floor($totalSessionSeconds / 60));
+
         $currentItem = $session->queueItems()
                             ->where(function($query) {
                                 $query->where('status', 'pending')
@@ -109,7 +139,7 @@ class StudyController extends Controller
         if (!$currentItem) {
             $session->update([
                 'ended_at' => $now,
-                'total_seconds' => $now->diffInSeconds($started),
+                'total_seconds' => $totalSessionSeconds,
             ]);
             
             $this->updateNextReviewDate($session->note);
@@ -122,10 +152,6 @@ class StudyController extends Controller
         $studyMethods = $this->getStudyMethods();
         $methodConfig = $studyMethods[$session->method] ?? $studyMethods['SM2'];
 
-        $elapsedSeconds = $now->diffInSeconds($started);
-        $totalMinutes = floor($elapsedSeconds / 60);
-        $totalSeconds = $elapsedSeconds % 60;
-
         return view('study.session', compact(
             'session', 
             'currentItem', 
@@ -133,7 +159,9 @@ class StudyController extends Controller
             'note', 
             'methodConfig',
             'totalMinutes',
-            'totalSeconds'
+            'totalSeconds',
+            'remainingStudyTime',
+            'studyTime'
         ));
     }
 
@@ -165,6 +193,20 @@ class StudyController extends Controller
             $this->updateQueueItem($queueItem, $request->quality, $session);
         }
 
+        $now = Carbon::now();
+        $config = json_decode($session->config, true);
+        $totalElapsedSeconds = $config['total_elapsed_seconds'] ?? 0;
+        $currentStudyStart = isset($config['current_study_start']) ? Carbon::parse($config['current_study_start']) : $now;
+        $currentElapsedSeconds = $now->diffInSeconds($currentStudyStart);
+        $totalSessionSeconds = $totalElapsedSeconds + $currentElapsedSeconds;
+        
+        $config['total_elapsed_seconds'] = $totalSessionSeconds;
+        $config['current_study_start'] = $now->toISOString();
+        $session->update([
+            'config' => json_encode($config),
+            'total_seconds' => $totalSessionSeconds
+        ]);
+
         $remainingItems = $session->queueItems()
                                 ->where(function($query) {
                                     $query->where('status', 'pending')
@@ -172,14 +214,16 @@ class StudyController extends Controller
                                 })
                                 ->where(function($query) {
                                     $query->where('next_review_at', '<=', now())
-                                          ->orWhereNull('next_review_at');
+                                      ->orWhereNull('next_review_at');
                                 })
                                 ->count();
 
         if ($remainingItems === 0) {
+            $endedAt = now();
+            
             $session->update([
-                'ended_at' => now(),
-                'total_seconds' => now()->diffInSeconds($session->started_at),
+                'ended_at' => $endedAt,
+                'total_seconds' => $totalSessionSeconds,
             ]);
 
             $this->updateNextReviewDate($session->note);
@@ -197,6 +241,28 @@ class StudyController extends Controller
         ]);
     }
 
+    public function saveTime(Request $request, StudySession $session)
+    {
+        if ($session->user_id !== AuthHelper::id()) {
+            abort(403);
+        }
+
+        $request->validate([
+            'total_seconds' => 'required|integer',
+        ]);
+
+        $config = json_decode($session->config, true);
+        $config['total_elapsed_seconds'] = $request->total_seconds;
+        $config['current_study_start'] = Carbon::now()->toISOString();
+        
+        $session->update([
+            'config' => json_encode($config),
+            'total_seconds' => $request->total_seconds
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
     public function complete(StudySession $session)
     {
         if ($session->user_id !== AuthHelper::id()) {
@@ -212,14 +278,24 @@ class StudyController extends Controller
                 $session->update(['started_at' => $started]);
             }
 
-            $totalSeconds = $now->diffInSeconds($started);
-            
-            $totalSeconds = max(60, $totalSeconds);
-            
-            $session->update([
-                'ended_at' => $now,
-                'total_seconds' => $totalSeconds,
-            ]);
+            if (!$session->total_seconds || $session->total_seconds == 0) {
+                $config = json_decode($session->config, true);
+                $totalElapsedSeconds = $config['total_elapsed_seconds'] ?? 0;
+                $currentStudyStart = isset($config['current_study_start']) ? Carbon::parse($config['current_study_start']) : $now;
+                $currentElapsedSeconds = $now->diffInSeconds($currentStudyStart);
+                $totalSeconds = $totalElapsedSeconds + $currentElapsedSeconds;
+                
+                $totalSeconds = max(60, $totalSeconds);
+                
+                $session->update([
+                    'ended_at' => $now,
+                    'total_seconds' => $totalSeconds,
+                ]);
+            } else {
+                $session->update([
+                    'ended_at' => $now,
+                ]);
+            }
 
             $this->updateNextReviewDate($session->note);
         }
@@ -241,6 +317,30 @@ class StudyController extends Controller
         $breakTime = $config['break_time'] ?? 5;
 
         return view('study.break', compact('session', 'breakTime'));
+    }
+
+    public function resumeFromBreak(StudySession $session)
+    {
+        if ($session->user_id !== AuthHelper::id()) {
+            abort(403);
+        }
+
+        $now = Carbon::now();
+        $config = json_decode($session->config, true);
+        
+        $currentStudyStart = isset($config['current_study_start']) ? Carbon::parse($config['current_study_start']) : $now;
+        $elapsedBeforeBreak = $now->diffInSeconds($currentStudyStart);
+        $totalElapsedSeconds = ($config['total_elapsed_seconds'] ?? 0) + $elapsedBeforeBreak;
+        
+        $config['current_study_start'] = $now->toISOString();
+        $config['total_elapsed_seconds'] = $totalElapsedSeconds;
+        
+        $session->update([
+            'config' => json_encode($config),
+            'total_seconds' => $totalElapsedSeconds
+        ]);
+
+        return redirect()->route('study.session', $session);
     }
 
     public function getStudyMethods()
@@ -291,28 +391,28 @@ class StudyController extends Controller
         return $methods[$method]['intervals'] ?? [1, 3, 7, 14, 30];
     }
 
-private function updateQueueItem($queueItem, $quality, $session)
-{
-    $newRepetition = $queueItem->repetition_count + 1;
-    
-    $intervals = $this->getStudyMethods()[$session->method]['intervals'];    
-    
-    if ($newRepetition <= count($intervals)) {
-        $interval = $intervals[$newRepetition - 1];
-    } else {
-        $interval = $intervals[0];     
-        $newRepetition = 1;            
-    }
+    private function updateQueueItem($queueItem, $quality, $session)
+    {
+        $newRepetition = $queueItem->repetition_count + 1;
+        
+        $intervals = $this->getStudyMethods()[$session->method]['intervals'];    
+        
+        if ($newRepetition <= count($intervals)) {
+            $interval = $intervals[$newRepetition - 1];
+        } else {
+            $interval = $intervals[0];     
+            $newRepetition = 1;            
+        }
 
-    $queueItem->update([    
-        'repetition_count' => $newRepetition,
-        'interval_days' => $interval,
-        'status' => 'done',
-        'next_review_at' => now()->addDays($interval),
-        'last_quality' => $quality,
-        'last_reviewed_at' => now(),
-    ]);
-}
+        $queueItem->update([    
+            'repetition_count' => $newRepetition,
+            'interval_days' => $interval,
+            'status' => 'done',
+            'next_review_at' => now()->addDays($interval),
+            'last_quality' => $quality,
+            'last_reviewed_at' => now(),
+        ]);
+    }
     
     public function reviewSessions()
     {
@@ -334,81 +434,85 @@ private function updateQueueItem($queueItem, $quality, $session)
         return view('study.review-sessions', compact('reviewSessions'));
     }
 
-  public function startReview(Note $note)
-{
-    if ($note->user_id !== AuthHelper::id()) {
-        abort(403);
-    }
+    public function startReview(Note $note)
+    {
+        if ($note->user_id !== AuthHelper::id()) {
+            abort(403);
+        }
 
-    if ($note->next_review_at && $note->next_review_at->gt(now())) {
-        return redirect()->back()
-                        ->with('error', 'Next review is scheduled for ' . $note->next_review_at->format('M d, Y'));
-    }
+        if ($note->next_review_at && $note->next_review_at->gt(now())) {
+            return redirect()->back()
+                            ->with('error', 'Next review is scheduled for ' . $note->next_review_at->format('M d, Y'));
+        }
 
-    $startedAt = Carbon::now();
+        $startedAt = Carbon::now();
 
-    $session = StudySession::create([
-        'user_id' => AuthHelper::id(),
-        'note_id' => $note->id,
-        'method' => $note->study_method,
-        'config' => json_encode([
-            'study_time' => 25,
-            'break_time' => 5,
-            'intervals' => $this->getIntervals($note->study_method),
-        ]),
-        'started_at' => $startedAt,
-    ]);
-
-    $queueItems = SessionQueueItem::whereHas('session', function($query) use ($note) {
-            $query->where('note_id', $note->id)
-                  ->where('user_id', AuthHelper::id());
-        })
-        ->where(function($query) {
-            $query->where('status', 'pending')
-                  ->orWhere('status', 'again')
-                  ->orWhere(function($q) {
-                      $q->where('status', 'done')
-                        ->where('next_review_at', '<=', now());
-                  });
-        })
-        ->with('page')
-        ->get();
-
-    foreach ($queueItems as $index => $queueItem) {
-        SessionQueueItem::create([
-            'session_id' => $session->id,
-            'page_id' => $queueItem->page_id,
-            'queue_position' => $index + 1,
-            'status' => 'pending',
-            'next_review_at' => $startedAt,
-            'interval_days' => $queueItem->interval_days,
-            'repetition_count' => $queueItem->repetition_count,
+        $session = StudySession::create([
+            'user_id' => AuthHelper::id(),
+            'note_id' => $note->id,
+            'method' => $note->study_method,
+            'config' => json_encode([
+                'study_time' => 25,
+                'break_time' => 5,
+                'intervals' => $this->getIntervals($note->study_method),
+                'current_study_start' => $startedAt->toISOString(),
+                'total_elapsed_seconds' => 0,
+            ]),
+            'started_at' => $startedAt,
+            'total_seconds' => 0,
         ]);
+
+        $queueItems = SessionQueueItem::whereHas('session', function($query) use ($note) {
+                $query->where('note_id', $note->id)
+                      ->where('user_id', AuthHelper::id());
+            })
+            ->where(function($query) {
+                $query->where('status', 'pending')
+                      ->orWhere('status', 'again')
+                      ->orWhere(function($q) {
+                          $q->where('status', 'done')
+                            ->where('next_review_at', '<=', now());
+                      });
+            })
+            ->with('page')
+            ->get();
+
+        foreach ($queueItems as $index => $queueItem) {
+            SessionQueueItem::create([
+                'session_id' => $session->id,
+                'page_id' => $queueItem->page_id,
+                'queue_position' => $index + 1,
+                'status' => 'pending',
+                'next_review_at' => $startedAt,
+                'interval_days' => $queueItem->interval_days,
+                'repetition_count' => $queueItem->repetition_count,
+            ]);
+        }
+
+        $note->update(['next_review_at' => null]);
+
+        return redirect()->route('study.session', $session)
+                        ->with('success', 'Review session started!');
     }
 
-    $note->update(['next_review_at' => null]);
+    private function calculateNextReviewDate(Note $note)
+    {
+        if (!$note->study_method) {
+            return null;
+        }
 
-    return redirect()->route('study.session', $session)
-                    ->with('success', 'Review session started!');
-}
-private function calculateNextReviewDate(Note $note)
-{
-    if (!$note->study_method) {
-        return null;
+        $userSessions = StudySession::where('note_id', $note->id)
+                                    ->where('user_id', AuthHelper::id())
+                                    ->pluck('id');
+
+        $nextReview = SessionQueueItem::whereIn('session_id', $userSessions)
+                                    ->where('status', 'done')
+                                    ->where('next_review_at', '>', now())
+                                    ->orderBy('next_review_at', 'asc')
+                                    ->first();
+
+        return $nextReview ? $nextReview->next_review_at : null;
     }
-
-    $userSessions = StudySession::where('note_id', $note->id)
-                                ->where('user_id', AuthHelper::id())
-                                ->pluck('id');
-
-    $nextReview = SessionQueueItem::whereIn('session_id', $userSessions)
-                                ->where('status', 'done')
-                                ->where('next_review_at', '>', now())
-                                ->orderBy('next_review_at', 'asc')
-                                ->first();
-
-    return $nextReview ? $nextReview->next_review_at : null;
-}
 
     private function updateNextReviewDate(Note $note)
     {

@@ -1,8 +1,6 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'Break Time - MemoryMaster'); ?>
 
-@section('title', 'Break Time - MemoryMaster')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="max-w-2xl mx-auto px-4 py-8">
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
         <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -12,14 +10,14 @@
         <h1 class="text-3xl font-bold text-gray-800 mb-4">Break Time!</h1>
         <p class="text-gray-600 mb-6">Take a breather. Your break will be over in:</p>
         
-        <div class="text-5xl font-bold text-orange-600 mb-8" id="break-timer">{{ $breakTime }}:00</div>
+        <div class="text-5xl font-bold text-orange-600 mb-8" id="break-timer"><?php echo e($breakTime); ?>:00</div>
         
         <p class="text-sm text-gray-500 mb-8">
             Relax, stretch, or grab some water. You'll continue automatically when the break is over.
         </p>
 
         <div class="flex justify-center space-x-4">
-            <a href="{{ route('study.complete', $session) }}" 
+            <a href="<?php echo e(route('study.complete', $session)); ?>" 
                class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
                 End Session
             </a>
@@ -32,7 +30,7 @@
 </div>
 
 <script>
-let breakTime = {{ $breakTime }};
+let breakTime = <?php echo e($breakTime); ?>;
 let secondsRemaining = breakTime * 60;
 const timerElement = document.getElementById('break-timer');
 
@@ -42,7 +40,7 @@ function updateTimer() {
     timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     
     if (secondsRemaining <= 0) {
-        window.location.href = '{{ route("study.resume-from-break", $session) }}';
+        window.location.href = '<?php echo e(route("study.resume-from-break", $session)); ?>';
     } else {
         secondsRemaining--;
         setTimeout(updateTimer, 1000);
@@ -50,9 +48,10 @@ function updateTimer() {
 }
 
 function skipBreak() {
-    window.location.href = '{{ route("study.resume-from-break", $session) }}';
+    window.location.href = '<?php echo e(route("study.resume-from-break", $session)); ?>';
 }
 
 updateTimer();
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\study\NIC\DGL-123(intoduction PHP)\php_project\php_project_\resources\views/study/break.blade.php ENDPATH**/ ?>

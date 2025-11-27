@@ -43,7 +43,6 @@
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="<?php echo e(route('home')); ?>#methods" class="text-gray-600 hover:text-blue-600 font-medium">Methods</a>
                     <a href="<?php echo e(route('home')); ?>#features" class="text-gray-600 hover:text-blue-600 font-medium">Features</a>
-                    <a href="<?php echo e(route('home')); ?>#about" class="text-gray-600 hover:text-blue-600 font-medium">About</a>
                 </div>
 
                 <div class="flex items-center space-x-4">

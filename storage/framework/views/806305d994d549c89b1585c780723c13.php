@@ -21,11 +21,18 @@
             </div>
             <div class="bg-gray-50 rounded-lg p-6">
                 <?php
-                    $safeTotalTime = max(0, $totalTime);
-                    $minutes = floor($safeTotalTime / 60);
+                    $safeTotalTime = max(1, $session->total_seconds); 
+                    $hours = floor($safeTotalTime / 3600);
+                    $minutes = floor(($safeTotalTime % 3600) / 60);
                     $seconds = $safeTotalTime % 60;
                 ?>
-                <div class="text-2xl font-bold text-purple-600"><?php echo e($minutes); ?>:<?php echo e(sprintf('%02d', $seconds)); ?></div>
+                <div class="text-2xl font-bold text-purple-600">
+                    <?php if($hours > 0): ?>
+                        <?php echo e($hours); ?>h <?php echo e($minutes); ?>m <?php echo e($seconds); ?>s
+                    <?php else: ?>
+                        <?php echo e($minutes); ?>m <?php echo e($seconds); ?>s
+                    <?php endif; ?>
+                </div>
                 <div class="text-sm text-gray-600">Total Time</div>
             </div>
             <div class="bg-gray-50 rounded-lg p-6">
@@ -47,4 +54,5 @@
     </div>
 </div>
 <?php $__env->stopSection(); ?>
+
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\study\NIC\DGL-123(intoduction PHP)\php_project\php_project_\resources\views/study/complete.blade.php ENDPATH**/ ?>
