@@ -30,28 +30,23 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Navigation Bar with Logo -->
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-4">
-                <!-- Logo Section -->
                 <div class="flex items-center space-x-2">
                     <a href="<?php echo e(route('home')); ?>" class="flex items-center space-x-2">
-                        <!-- Logo Image -->
                         <img src="<?php echo e(asset('images/logo.png')); ?>" 
                              alt="MemoryMaster Logo" 
-                             class="h-8 w-auto md:h-10"> <!-- Responsive logo size -->
+                             class="h-8 w-auto md:h-10"> 
                         <span class="text-xl font-bold text-gray-800">MemoryMaster</span>
                     </a>
                 </div>
                 
-                <!-- Navigation Links -->
                 <div class="hidden md:flex items-center space-x-8">
                     <a href="<?php echo e(route('home')); ?>#methods" class="text-gray-600 hover:text-blue-600 font-medium">Methods</a>
                     <a href="<?php echo e(route('home')); ?>#features" class="text-gray-600 hover:text-blue-600 font-medium">Features</a>
                 </div>
 
-                <!-- User Auth Section -->
                 <div class="flex items-center space-x-4">
                     <?php if(session('user')): ?>
                         <a href="<?php echo e(route('dashboard')); ?>" class="text-gray-600 hover:text-blue-600 font-medium">Dashboard</a>
@@ -78,8 +73,6 @@
     <main>
         <?php echo $__env->yieldContent('content'); ?>
     </main>
-
-    <!-- Break Overlay -->
     <div id="breakOverlay" class="break-overlay fixed inset-0 hidden items-center justify-center text-white">
         <div class="text-center">
             <div class="text-6xl mb-4">
@@ -92,14 +85,11 @@
         </div>
     </div>
 
-    <!-- Footer with Logo -->
     <footer class="bg-gray-800 text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <!-- Company Info with Logo -->
                 <div>
                     <div class="flex items-center space-x-2 mb-4">
-                        <!-- Footer Logo -->
                         <img src="<?php echo e(asset('images/logo.png')); ?>" 
                              alt="MemoryMaster Logo" 
                              class="h-8 w-auto">
@@ -110,7 +100,6 @@
                     </p>
                 </div>
                 
-                <!-- Methods Links -->
                 <div>
                     <h4 class="font-bold mb-4">Methods</h4>
                     <ul class="space-y-2 text-gray-400">
@@ -121,7 +110,6 @@
                     </ul>
                 </div>
                 
-                <!-- Resources Links -->
                 <div>
                     <h4 class="font-bold mb-4">Resources</h4>
                     <ul class="space-y-2 text-gray-400">
@@ -132,7 +120,6 @@
                     </ul>
                 </div>
                 
-                <!-- Connect Links -->
                 <div>
                     <h4 class="font-bold mb-4">Connect</h4>
                     <ul class="space-y-2 text-gray-400">
@@ -143,7 +130,6 @@
                 </div>
             </div>
             
-            <!-- Copyright -->
             <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
                 <p>&copy; 2025 MemoryMaster. All rights reserved. (Pham Hong Truong)</p>
             </div>

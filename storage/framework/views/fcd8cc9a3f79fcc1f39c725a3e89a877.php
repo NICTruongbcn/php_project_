@@ -185,7 +185,6 @@ let answerShown = false;
 let timerInterval;
 let studyTimerInterval;
 
-// Sử dụng thời gian từ server - đây là tổng thời gian tích lũy
 let totalSessionSeconds = <?php echo e($totalMinutes * 60 + $totalSeconds); ?>;
 let studyTimeMinutes = <?php echo e($studyTime); ?>;
 let studyTimeSeconds = studyTimeMinutes * 60;
@@ -204,7 +203,6 @@ function updateStudyTimer() {
     studyTimeSeconds--;
     
     if (studyTimeSeconds <= 0) {
-        // Lưu thời gian hiện tại trước khi chuyển trang
         saveCurrentTime();
         window.location.href = '<?php echo e(route("study.break", $session)); ?>';
         return;
@@ -215,9 +213,7 @@ function updateStudyTimer() {
     document.getElementById('study-timer').textContent = minutes + ':' + seconds.toString().padStart(2, '0');
 }
 
-// Hàm lưu thời gian hiện tại
 function saveCurrentTime() {
-    // Gửi request để lưu thời gian hiện tại
     fetch('<?php echo e(route("study.save-time", $session)); ?>', {
         method: 'POST',
         headers: {
@@ -248,7 +244,6 @@ function rateAnswer(rating) {
     clearInterval(timerInterval);
     clearInterval(studyTimerInterval);
     
-    // Lưu thời gian trước khi gửi review
     saveCurrentTime();
     
     fetch('<?php echo e(route("study.review", $session)); ?>', {
@@ -261,7 +256,7 @@ function rateAnswer(rating) {
             page_id: <?php echo e($page->id); ?>,
             quality: rating,
             response_time: responseTime,
-            total_seconds: totalSessionSeconds // Gửi thời gian hiện tại
+            total_seconds: totalSessionSeconds 
         })
     })
     .then(response => {
@@ -301,12 +296,11 @@ document.addEventListener('keydown', function(event) {
 });
 
 window.addEventListener('beforeunload', function() {
-    saveCurrentTime(); // Lưu thời gian khi rời trang
+    saveCurrentTime(); 
     clearInterval(timerInterval);
     clearInterval(studyTimerInterval);
 });
 
-// Khởi tạo timer ngay lập tức
 updateLiveTimer();
 </script>
 <?php $__env->stopSection(); ?>
